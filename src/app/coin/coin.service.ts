@@ -2,8 +2,6 @@ import * as THREE from "three";
 import * as CANNON from 'cannon';
 import GLTFLoader from 'three-gltf-loader';
 import { Injectable } from '@angular/core';
-import { VirtualTimeScheduler, throwError } from 'rxjs';
-import { Vector3 } from 'three';
 
 @Injectable({
   providedIn: 'root'
@@ -25,7 +23,7 @@ export class CoinService {
   private raycaster: THREE.Raycaster;
   private dt=1/60;
   //object
-  private INTERSECTED;
+
   private coins:any[]=[];
   private coinMeshes:any[]=[];
   private floorGeo: THREE.PlaneGeometry;
@@ -33,7 +31,7 @@ export class CoinService {
   private coinMaterial: THREE.MeshMatcapMaterial;
   private mesh: THREE.Mesh;
   private loader: GLTFLoader;
-
+  private physicMaterial:CANNON.Material; 
   constructor() { }
 
   createScene(id: string) {
@@ -80,7 +78,7 @@ export class CoinService {
     this.floorGeo=new THREE.PlaneGeometry(300,300,50,50);
     this.floorGeo.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI/2));
 
-    this.material = new THREE.MeshLambertMaterial( { color: 0x11111,wireframe:true } );
+    this.material = new THREE.MeshLambertMaterial( { color: 0x11111 } );
     this.coinMaterial = new THREE.MeshMatcapMaterial({color:0xDFB048});
     this.mesh = new THREE.Mesh(this.floorGeo,this.material);
     this.scene.add(this.mesh);
@@ -121,27 +119,37 @@ export class CoinService {
       //   if ( this.INTERSECTED ) this.INTERSECTED.material.emissive.setHex( this.INTERSECTED.currentHex );
       //   this.INTERSECTED = null;
       // }
+      var coinShape = new CANNON.Cylinder(size,size,size*.2,16);
+      var size=.1;
+      var coinGeometry = new THREE.CylinderGeometry(size,size,size*.2 , 16);
+      var coinMesh = new THREE.Mesh( coinGeometry, this.coinMaterial );
+
+      var coinBody = new CANNON.Body({ mass: 1, material:this.physicMaterial });
+      var quat = new CANNON.Quaternion();
+      quat.setFromAxisAngle(new CANNON.Vec3(1,0,0),Math.PI/2);
+      coinShape.transformAllPoints(new CANNON.Vec3(),quat);
+      coinBody.addShape(coinShape);
+
       var dropPoint =new THREE.Vector3();
-      var shootDirection = new THREE.Vector3(0,10,0);
       dropPoint.copy(this.getClicked3DPoint(event));
+      var shootDirection = new THREE.Vector3(0,10,0);
+      var shootVelo =2;
       var x = dropPoint.x;
       var y = dropPoint.y;
       var z = dropPoint.z;
       var ray = new THREE.Ray(dropPoint, shootDirection.sub(dropPoint).normalize() );
-      shootDirection.copy(ray.direction);
 
-      var size=.1
-      var coinShape = new CANNON.Cylinder(size,size,size*.2,16);
-      var coinGeometry = new THREE.CylinderGeometry(size,size,size*.2 , 16);
-      var coinBody = new CANNON.Body({ mass: 1 });
-      var shootVelo =2;
-      coinBody.addShape(coinShape);
-      var coinMesh = new THREE.Mesh( coinGeometry, this.coinMaterial );
+      
+      shootDirection.copy(ray.direction);
+      coinBody.velocity.set(shootDirection.x*shootVelo,shootDirection.y*shootVelo,shootDirection.z*shootVelo);
+
       this.world.addBody(coinBody);
       this.scene.add(coinMesh);
       this.coins.push(coinBody);
       this.coinMeshes.push(coinMesh);
-      coinBody.velocity.set(shootDirection.x*shootVelo,shootDirection.y*shootVelo,shootDirection.z*shootVelo);
+
+      
+
       x+=shootDirection.x;
       y+=shootDirection.y;
       z+=shootDirection.z;
@@ -177,7 +185,11 @@ export class CoinService {
   initCannon(){
     this.world=new CANNON.World();
     this.world.gravity.set(0,-10,0);
-    this.world.broadphase=new CANNON.NaiveBroadphase();
+    //this.world.broadphase=new CANNON.NaiveBroadphase();
+
+    this.physicMaterial = new CANNON.Material();
+    this.physicMaterial.friction=.3;
+    this.physicMaterial.restitution=.1;
 
     // Create a plane
     let groundShape = new CANNON.Plane();
@@ -186,15 +198,7 @@ export class CoinService {
     groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);
     this.world.addBody(groundBody);
 
-    let physicMaterial = new CANNON.Material("slipperyMaterial");
-    let physicContactMaterial = new CANNON.ContactMaterial(physicMaterial,physicMaterial,0,.3);
-    this.world.addContactMaterial(physicContactMaterial);
 
-    let halfextents = new CANNON.Vec3(1,1,1);
-    let boxShape = new CANNON.Box(halfextents);
-
-    let boxGeo = new THREE.BoxGeometry(halfextents.x*2,halfextents.y*2,halfextents.z*2);
-    var boxbody = new CANNON.Body(5, boxShape);
 
     // shoot ball
     
@@ -217,6 +221,24 @@ export class CoinService {
         return intersects[0].point;
     
   };
+  createCoin(){
+    var coinShape = new CANNON.Cylinder(size,size,size*.2,16);
+    var size=.1;
+    var coinGeometry = new THREE.CylinderGeometry(size,size,size*.2 , 16);
+    var coinMesh = new THREE.Mesh( coinGeometry, this.coinMaterial );
+
+    var coinBody = new CANNON.Body({ mass: 1, material:this.physicMaterial });
+    var quat = new CANNON.Quaternion();
+    quat.setFromAxisAngle(new CANNON.Vec3(1,0,0),Math.PI/2);
+    coinShape.transformAllPoints(new CANNON.Vec3(),quat);
+    coinBody.addShape(coinShape);
+
+    this.world.addBody(coinBody);
+    this.scene.add(coinMesh);
+    this.coins.push(coinBody);
+    this.coinMeshes.push(coinMesh);
+    
+  }
 
 
 }
