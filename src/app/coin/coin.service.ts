@@ -24,8 +24,8 @@ export class CoinService {
   private dt=1/60;
   //object
 
-  private coins:any[]=[];
-  private coinMeshes:any[]=[];
+  private bodies:any[]=[];
+  private meshes:any[]=[];
   private floorGeo: THREE.PlaneGeometry;
   private material: THREE.MeshLambertMaterial;
   private coinMaterial: THREE.MeshMatcapMaterial;
@@ -111,8 +111,10 @@ export class CoinService {
       //   if ( this.INTERSECTED ) this.INTERSECTED.material.emissive.setHex( this.INTERSECTED.currentHex );
       //   this.INTERSECTED = null;
       // }
-
-      this.createCoin(event);
+      
+        this.createCoin(event);    
+      
+      
  
     })
   }
@@ -125,9 +127,9 @@ export class CoinService {
     this.world.step(this.dt);
 
     // Update coin positions
-    for (var i = 0; i < this.coins.length; i++) {
-      this.coinMeshes[i].position.copy(this.coins[i].position);
-      this.coinMeshes[i].quaternion.copy(this.coins[i].quaternion);
+    for (var i = 0; i < this.meshes.length; i++) {
+      this.meshes[i].position.copy(this.bodies[i].position);
+      this.meshes[i].quaternion.copy(this.bodies[i].quaternion);
     }
 
     this.renderer.render(this.scene,this.camera);
@@ -175,6 +177,43 @@ export class CoinService {
   }
   createBox(){
     //Physics
+    let body = new CANNON.Body({ mass: 10,material:this.groundMaterial});
+    body.position.set(0, 1, 0);
+    // body.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI / 2);
+
+    // Use a box shape as child shape
+    let shape = new CANNON.Box(new CANNON.Vec3(1.101, 0.126, 2.01));
+    body.addShape(shape, new CANNON.Vec3(0,0.125,0));
+    
+    let shape2 = new CANNON.Box(new CANNON.Vec3(0.05, 1.1, 1.9));
+    body.addShape(shape2, new CANNON.Vec3(-0.96,1.1,0));
+    body.addShape(shape2, new CANNON.Vec3(0.96,1.1,0));
+    
+    let shape3 = new CANNON.Box(new CANNON.Vec3(0.9, 1.1, 0.035));
+    body.addShape(shape3, new CANNON.Vec3(0,1.1,1.865));
+    body.addShape(shape3, new CANNON.Vec3(0,1.1,-1.865));
+
+    let column = new CANNON.Cylinder(0.1,0.1,1.8,4);
+    body.addShape(column, new CANNON.Vec3(0,2.125,-1.475),new CANNON.Quaternion(0,0.7071,0,0.7071));
+    body.addShape(column, new CANNON.Vec3(0,2.125,-1.095),new CANNON.Quaternion(0,0.7071,0,0.7071));
+    body.addShape(column, new CANNON.Vec3(0,2.125,-0.7),new CANNON.Quaternion(0,0.7071,0,0.7071));
+    body.addShape(column, new CANNON.Vec3(0,2.125,-0.31),new CANNON.Quaternion(0,0.7071,0,0.7071));
+    body.addShape(column, new CANNON.Vec3(0,2.125,0.1),new CANNON.Quaternion(0,0.7071,0,0.7071));
+    body.addShape(column, new CANNON.Vec3(0,2.125,0.555),new CANNON.Quaternion(0,0.7071,0,0.7071));
+    body.addShape(column, new CANNON.Vec3(0,2.125,1.01),new CANNON.Quaternion(0,0.7071,0,0.7071));
+    body.addShape(column, new CANNON.Vec3(0,2.125,1.47),new CANNON.Quaternion(0,0.7071,0,0.7071));
+
+    let shape4 = new CANNON.Box(new CANNON.Vec3(0.15, 0.11, 2.1));
+    body.addShape(shape4, new CANNON.Vec3(-1.043,2.117,0));
+    body.addShape(shape4, new CANNON.Vec3(1.043,2.117,0));
+
+    let shape5 = new CANNON.Box(new CANNON.Vec3(1.08, 0.11, 0.157));
+    body.addShape(shape5, new CANNON.Vec3(0,2.117,1.938));
+    body.addShape(shape5, new CANNON.Vec3(0,2.117,-1.938));
+
+    this.bodies.push(body);
+
+    this.world.addBody(body);
 
     //Graphics
     this.loader = new GLTFLoader();
@@ -182,8 +221,10 @@ export class CoinService {
       'assets/saisen.glb',
       (gltf)=>{
         let thing = gltf.scene;
+        this.meshes.push(thing);
         this.scene.add(thing);
-          this.camera.lookAt(thing.position);
+        this.camera.lookAt(thing.position);
+
       }
     )
   }
@@ -198,17 +239,17 @@ export class CoinService {
     coinShape.transformAllPoints(new CANNON.Vec3(),quat);
     coinBody.addShape(coinShape);
     this.world.addBody(coinBody);
-    this.coins.push(coinBody);
+    this.bodies.push(coinBody);
 
     //Graphics
     let coinGeometry = new THREE.CylinderGeometry(size,size,size*.2 , 16);
     this.coinMaterial = new THREE.MeshMatcapMaterial({color:0xDFB048});
     let coinMesh = new THREE.Mesh( coinGeometry, this.coinMaterial );
     this.scene.add(coinMesh);
-    this.coinMeshes.push(coinMesh);
+    this.meshes.push(coinMesh);
 
     // throw coin trajectory
-    let shootVelo=2;
+    let shootVelo=5;
     let shootPosition= new THREE.Vector3();
     shootPosition=this.throwPosition(event);
     let shootDirection = new THREE.Vector3(0,10,0);
