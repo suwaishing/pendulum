@@ -95,50 +95,11 @@ export class CoinService {
     window.addEventListener('resize',()=>{
       this.resize();
     })
+
     window.addEventListener('mousedown',(event)=>{
-      
-      //console.log(intersects[ 0 ]);
-      // if ( intersects.length > 0 ) {
-      //   if ( this.INTERSECTED != intersects[ 0 ].object ) {
-      //     if ( this.INTERSECTED ) this.INTERSECTED.material.emissive.setHex( this.INTERSECTED.currentHex );
-      //     this.INTERSECTED = intersects[ 0 ].object;
-      //     this.INTERSECTED.currentHex = this.INTERSECTED.material.emissive.getHex();
-      //     this.INTERSECTED.material.emissive.setHex( 0xff0000 );
-      //     console.log(intersects.length);
-      //   }
-      // } else {
-      //   if ( this.INTERSECTED ) this.INTERSECTED.material.emissive.setHex( this.INTERSECTED.currentHex );
-      //   this.INTERSECTED = null;
-      // }
       this.createCoin(event);
-      
     })
-
-    setInterval(()=>{
-      // this.meshes.forEach((coin,i)=>{
-      //   if (i>0) {
-      //     this.world.remove(coin);
-      //     this.scene.
-      //     this.meshes.splice(coin, 1);
-      //   }
-      // })
-      //this.meshes[1].remove;
-      console.log(this.meshes);
-    },5000)
-
-    // setInterval(()=>{
-    //   this.coinsToRemove.forEach((coin)=>{
-    //     this.scene.remove(coin.coinMesh);
-        // const index = this.meshes.indexOf(coin.coinMesh);
-        // if (index > 0) {
-        //   this.meshes.splice(index, 1);
-        // }
-    //   })
-
-    //   this.coinsToRemove=[];
-    //   console.log(this.bodies)
-    // },15000)
-  
+    
   }
 
 
