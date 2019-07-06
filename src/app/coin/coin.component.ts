@@ -4,7 +4,7 @@ import { CoinService } from './coin.service';
 @Component({
   selector: 'app-coin',
   templateUrl: './coin.component.html',
-  styleUrls: ['./coin.component.sass']
+  styleUrls: ['./coin.component.scss']
 })
 export class CoinComponent implements OnInit {
   private coinId= 'coinCanvas';

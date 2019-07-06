@@ -3,11 +3,13 @@ import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
 import { CoinComponent } from './coin/coin.component';
+import { PendulumComponent } from './pendulum/pendulum.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    CoinComponent
+    CoinComponent,
+    PendulumComponent
   ],
   imports: [
     BrowserModule
