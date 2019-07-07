@@ -13,12 +13,6 @@ export class CoinService {
   private renderer: THREE.WebGLRenderer;
   private camera: THREE.PerspectiveCamera;
   private scene: THREE.Scene;
-  private light: THREE.AmbientLight;
-  private light2: THREE.DirectionalLight;
-  private light3: THREE.DirectionalLight;
-  private light4: THREE.PointLight;
-  private light5: THREE.PointLight;
-
 
   private mouse: THREE.Vector2;
   private raycaster: THREE.Raycaster;
@@ -53,34 +47,34 @@ export class CoinService {
     //this.scene.background= new THREE.Color( "rgb(98, 131, 149)" );
     this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, .1, 1000);
     //this.camera.position.set(8,8,0);
-    this.camera.position.set(8, 8, -1);
+    this.camera.position.set(8, 8, 0);
     this.scene.add(this.camera);
 
     //Create Light
-    this.light = new THREE.HemisphereLight( 0x7af0fa, 0x7804a4, 1 );
-    this.light.position.y = 10;
-    this.scene.add(this.light);
+    let light = new THREE.HemisphereLight( 0x6b00b2,0x99fff8, 2 );
+    light.position.y = 10;
+    this.scene.add(light);
 
-    this.light2 = new THREE.DirectionalLight(0xf1fb40,2);
-    this.light2.position.set(5, 10, 5);
-    this.light2.castShadow = true;
-    this.scene.add(this.light2);
+    let light2 = new THREE.PointLight(0xf1fb40,2);
+    light2.position.set(5, 10, 5);
+    light2.castShadow = true;
+    this.scene.add(light2);
 
-    var spotLight = new THREE.RectAreaLight(0xffffff,5,2.5,1.5);
-    spotLight.position.set(0,15,-1);
-    this.scene.add(spotLight);
+    // var spotLight = new THREE.RectAreaLight(0xffffff,5,4,2);
+    // spotLight.position.set(5,5,-5);
+    // this.scene.add(spotLight);
 
-    this.light3 = new THREE.DirectionalLight(0xf1fb40,2);
-    this.light3.position.set(5, 10, -6);
-    this.scene.add(this.light3);
+    let light3 = new THREE.PointLight(0xf1fb40,2);
+    light3.position.set(5, 10, -6);
+    this.scene.add(light3);
 
-    this.light4 = new THREE.PointLight(0xc4c4c4, 1);
-    this.light4.position.set(7, -7, 3);
-    this.scene.add(this.light4);
+    let light4 = new THREE.PointLight(0xc4c4c4, 2);
+    light4.position.set(7, -7, 3);
+    this.scene.add(light4);
 
-    this.light5 = new THREE.PointLight(0xc4c4c4, 1);
-    this.light5.position.set(7, -8, -2);
-    this.scene.add(this.light5);
+    let light5 = new THREE.PointLight(0xc4c4c4, 2);
+    light5.position.set(7, -8, -2);
+    this.scene.add(light5);
 
     //mouse and raycaster
     this.mouse = new THREE.Vector2();
@@ -155,8 +149,8 @@ export class CoinService {
     let floorGeo = new THREE.PlaneGeometry(100, 100, 25, 25);
     floorGeo.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
 
-    let material = new THREE.MeshLambertMaterial();
-    material.color= new THREE.Color(0x2412ff);
+    let material = new THREE.MeshStandardMaterial();
+    material.color= new THREE.Color(0xBA4859);
     //material.color= new THREE.Color(0xffffff);
 
     this.mesh = new THREE.Mesh(floorGeo, material);
@@ -219,6 +213,10 @@ export class CoinService {
         this.meshes.push(thing);
         this.scene.add(thing);
         this.camera.lookAt(thing.position);
+        thing.traverse( function( node ) {
+          if ( node instanceof THREE.Mesh ) { node.castShadow = true; }
+      } );
+  
 
       }
     )
@@ -238,7 +236,7 @@ export class CoinService {
 
     //Graphics
     let coinGeo = new THREE.CylinderGeometry(size, size, size * .2, 16);
-    let material = new THREE.MeshMatcapMaterial({ color: 0xDFB048 });
+    let material = new THREE.MeshPhongMaterial({ color: 0xdbe51b });
     let coinMesh = new THREE.Mesh(coinGeo, material);
     this.scene.add(coinMesh);
     this.meshes.push(coinMesh);
