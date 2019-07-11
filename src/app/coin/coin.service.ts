@@ -50,38 +50,46 @@ export class CoinService {
     //this.scene.background= new THREE.Color( "rgb(98, 131, 149)" );
     this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, .1, 1000);
     //this.camera.position.set(8,8,0);
-    this.camera.position.set(8, 8, 0);
+    this.camera.position.set(0, 7, 10);
     this.scene.add(this.camera);
 
     //Create Light
-    let light = new THREE.HemisphereLight( 0x6b00b2,0x99fff8, 2 );
-    light.position.y = 10;
-    this.scene.add(light);
+    // let light = new THREE.HemisphereLight( 0xf5bae3,0xbfd5e5,1);
+    // light.position.set(0,10,0);
+    // this.scene.add(light);
 
-    let light2 = new THREE.PointLight(0xf1fb40,2);
-    light2.position.set(5, 10, 5);
-    light2.castShadow = true;
-    this.scene.add(light2);
+    // let light2 = new THREE.DirectionalLight(0xf1dcf5,0.3);
+    // light2.position.set(-5, 1, 5);
+    // light2.castShadow = true;
+    // this.scene.add(light2);
 
-    // var spotLight = new THREE.RectAreaLight(0xffffff,5,4,2);
-    // spotLight.position.set(5,5,-5);
-    // this.scene.add(spotLight);
+  
+    var pointLight = new THREE.DirectionalLight(0xffffff,1);
+    pointLight.position.set(0,10,5);
+    this.scene.add(pointLight);
 
-    let light3 = new THREE.PointLight(0xf1fb40,2);
-    light3.position.set(5, 10, -6);
-    this.scene.add(light3);
+    // let light3 = new THREE.DirectionalLight(0xafcce4,.3);
+    // light3.position.set(5, 5, 5);
+    // light2.castShadow = true;
+    // this.scene.add(light3);
 
-    let light4 = new THREE.PointLight(0xc4c4c4, 2);
-    light4.position.set(7, -7, 3);
-    this.scene.add(light4);
+    // let light4 = new THREE.PointLight(0xfce916, 3);
+    // light4.position.set(1, 2, -1);
+    // this.scene.add(light4);
 
-    let light5 = new THREE.PointLight(0xc4c4c4, 2);
-    light5.position.set(7, -8, -2);
-    this.scene.add(light5);
+    // let light5 = new THREE.PointLight(0xc4c4c4, 2);
+    // light5.position.set(7, -8, -2);
+    // this.scene.add(light5);
 
     //mouse and raycaster
     this.mouse = new THREE.Vector2();
     this.raycaster = new THREE.Raycaster();
+
+    let background = new THREE.IcosahedronGeometry(20);
+    let backgroundMat = new THREE.MeshStandardMaterial({color: 0xf7a5d1, roughness:1, metalness:0,emissive:0x354164})
+    let backgroundMesh = new THREE.Mesh(background,backgroundMat);
+    backgroundMesh.position.set(0,0,0);
+    this.scene.add(backgroundMesh);
 
     this.initCannon();
     //Create Floor
@@ -154,8 +162,8 @@ export class CoinService {
     floorGeo.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
 
     let material = new THREE.MeshStandardMaterial();
-    material.color= new THREE.Color(0xBA4859);
-    //material.color= new THREE.Color(0xffffff);
+    //material.color= new THREE.Color(0xBA4859);
+    material.transparent= true;
 
     this.mesh = new THREE.Mesh(floorGeo, material);
     this.scene.add(this.mesh);
@@ -172,7 +180,7 @@ export class CoinService {
     //Physics
     let body = new CANNON.Body({ mass: 10, material: this.groundMaterial });
     //body.position.set(0, 1, 0);
-    // body.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI / 2);
+    body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
 
     // Use a box shape as child shape
     let shape = new CANNON.Box(new CANNON.Vec3(1.101, 0.126, 2.01));
@@ -216,12 +224,16 @@ export class CoinService {
       'assets/saisen2.glb',
       (gltf) => {
         let thing = gltf.scene;
+        thing.receiveShadow = true;
+        thing.castShadow = true;
+        //thing.rotation.set(0,-Math.PI/2,0)
+        console.log(thing);
         this.meshes.push(thing);
         this.scene.add(thing);
         this.camera.lookAt(thing.position);
-        thing.traverse( function( node ) {
-          if ( node instanceof THREE.Mesh ) { node.castShadow = true; }
-      } );
+      //   thing.traverse( function( node ) {
+      //     if ( node instanceof THREE.Mesh ) { node.castShadow = true; }
+      // } );
   
 
       }
@@ -239,7 +251,7 @@ export class CoinService {
 
     //Graphics
     this.loaderCoin = new GLTFLoader();
-    this.loaderCoin.load('assets/coinv0.2.glb',(gltf)=>{
+    this.loaderCoin.load('assets/coinv3.glb',(gltf)=>{
       this.coinObj = gltf.scene.children[0];
       this.coinObj.scale.set(.15,.15,.15);
     })
@@ -249,7 +261,7 @@ export class CoinService {
     let cloneMesh = new THREE.Object3D();
     cloneMesh = this.coinObj.clone();
 
-    let coinShape = new CANNON.Cylinder(.15, .15, 0.02,16);
+    let coinShape = new CANNON.Cylinder(.15, .15, 0.03,12);
     let coinBody = new CANNON.Body({ mass: 0.1, material: this.physicMaterial });
     let quat = new CANNON.Quaternion(0.7071, 0,0, 0.7071);
     quat.normalize();
@@ -319,7 +331,7 @@ export class CoinService {
       //const index = this.meshes.indexOf(coinMesh);
       this.world.remove(coinBody);
       this.scene.remove(cloneMesh);
-      cloneMesh = undefined;
+      cloneMesh.remove();
       this.meshes.splice(1, 1);
       this.bodies.splice(1, 1);
     }, 10000);
