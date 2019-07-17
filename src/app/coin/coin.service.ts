@@ -54,24 +54,36 @@ export class CoinService {
     this.scene.add(this.camera);
 
     //Create Light
-    // let light = new THREE.HemisphereLight( 0xf5bae3,0xbfd5e5,1);
-    // light.position.set(0,10,0);
-    // this.scene.add(light);
+    let light = new THREE.HemisphereLight( 0xf8bce5,0xc1d7e7,2);
+    //let light = new THREE.AmbientLight( 0xf5bae3,2);
+    light.position.set(0,7,5);
+    this.scene.add(light);
 
-    // let light2 = new THREE.DirectionalLight(0xf1dcf5,0.3);
-    // light2.position.set(-5, 1, 5);
+    // let light2 = new THREE.Light(0xffffff,5);
+    // light2.position.set(10, 7, -10);
     // light2.castShadow = true;
     // this.scene.add(light2);
 
   
-    var pointLight = new THREE.DirectionalLight(0xffffff,1);
-    pointLight.position.set(0,10,5);
+    var pointLight = new THREE.DirectionalLight(0xfffdd3,2);
+    pointLight.position.set(2,3,8).normalize();
     this.scene.add(pointLight);
+ 
+    // var pointLight2 = new THREE.DirectionalLight(0xfffdd3,.5);
+    // pointLight2.position.set(0,8,-10).normalize();
+    // this.scene.add(pointLight2);
 
-    // let light3 = new THREE.DirectionalLight(0xafcce4,.3);
-    // light3.position.set(5, 5, 5);
-    // light2.castShadow = true;
-    // this.scene.add(light3);
+    var light2 = new THREE.DirectionalLight(0xfffdd3,2);
+    light2.position.set(-10,10,2).normalize();
+    this.scene.add(light2);
+
+    let light3 = new THREE.DirectionalLight(0xfdff99,0.3);
+    
+    light3.position.set(0,8,-10);
+    light3.translateY(-1.5);
+    light3.translateZ(1.5);
+    //light3.castShadow = true;
+    this.scene.add(light3);
 
     // let light4 = new THREE.PointLight(0xfce916, 3);
     // light4.position.set(1, 2, -1);
@@ -85,10 +97,12 @@ export class CoinService {
     this.mouse = new THREE.Vector2();
     this.raycaster = new THREE.Raycaster();
 
-    let background = new THREE.IcosahedronGeometry(20);
+    let background = new THREE.IcosahedronGeometry(15);
     let backgroundMat = new THREE.MeshStandardMaterial({color: 0xf7a5d1, roughness:1, metalness:0,emissive:0x354164})
     let backgroundMesh = new THREE.Mesh(background,backgroundMat);
     backgroundMesh.position.set(0,0,0);
+    backgroundMesh.rotation.set(0,-Math.PI/2,0);
+    backgroundMesh.position.normalize();
     this.scene.add(backgroundMesh);
 
     this.initCannon();
@@ -162,8 +176,8 @@ export class CoinService {
     floorGeo.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
 
     let material = new THREE.MeshStandardMaterial();
-    //material.color= new THREE.Color(0xBA4859);
-    material.transparent= true;
+    material.color= new THREE.Color(0xBA4859);
+    //material.transparent= true;
 
     this.mesh = new THREE.Mesh(floorGeo, material);
     this.scene.add(this.mesh);
@@ -227,7 +241,7 @@ export class CoinService {
         thing.receiveShadow = true;
         thing.castShadow = true;
         //thing.rotation.set(0,-Math.PI/2,0)
-        console.log(thing);
+        //console.log(thing);
         this.meshes.push(thing);
         this.scene.add(thing);
         this.camera.lookAt(thing.position);
