@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import * as CANNON from "cannon";
-import { OrbitControls } from 'three-orbitcontrols-ts';
+import * as OrbitControls from 'three-orbitcontrols';
 import { Injectable } from '@angular/core';
 
 @Injectable({
@@ -22,6 +22,8 @@ export class PendulumService {
 
   private bodies: any[] = [];
   private meshes: any[] = [];
+  private balls: any[] = [];
+  private ballBodies: any[] = [];
   private mesh: THREE.Mesh;
   private physicMaterial: CANNON.Material;
   private groundMaterial: CANNON.Material;
@@ -65,13 +67,13 @@ export class PendulumService {
 
     this.initCannon();
     //Create Floor
-    this.createGround();
+    //this.createGround();
 
     //Load model
     this.addSphereChain();
 
     this.controls = new OrbitControls(this.camera,this.renderer.domElement);
-    this.dragControl = new DragControls(this.meshes, this.camera, this.renderer.domElement);
+    this.dragControl = new DragControls(this.balls, this.camera, this.renderer.domElement);
     console.log(this.bodies)
   }
 
@@ -106,15 +108,21 @@ export class PendulumService {
     // Update positions
 
     if(this.isDrag){
-      for (var i = 0; i < this.bodies.length; i++) {
-        this.bodies[i].position.copy(this.meshes[i].position);
-        this.bodies[i].quaternion.copy(this.meshes[i].quaternion);
+      for (var i = 0; i < this.ballBodies.length; i++) {
+        this.ballBodies[i].position.copy(this.balls[i].position);
+        this.ballBodies[i].quaternion.copy(this.balls[i].quaternion);
+      }
+    } else {
+      for (var i = 0; i < this.ballBodies.length; i++) {
+        this.balls[i].position.copy(this.ballBodies[i].position);
+        this.balls[i].quaternion.copy(this.ballBodies[i].quaternion);
       }
     }
     for (var i = 0; i < this.meshes.length; i++) {
       this.meshes[i].position.copy(this.bodies[i].position);
       this.meshes[i].quaternion.copy(this.bodies[i].quaternion);
     }
+    
     
     
     
@@ -166,27 +174,30 @@ export class PendulumService {
   }
 
   addSphereChain() {
-    let size = 0.5;
-    let sphereShape = new CANNON.Box(new CANNON.Vec3(size / 2, size, size / 2));
+    let size = 0.04;
+    let ropeShape = new CANNON.Cylinder(size, size, size*10, 10);
     let mass = 0;
-    let space = 0.15 * size;
     let lastBody = null;
     let N = 10;
 
     for (let i = 0; i < N; i++) {
       // Create a new body
-      let spherebody = new CANNON.Body({ mass: i === 0 ? mass : 0.5 });
-      spherebody.addShape(sphereShape);
-      spherebody.position.set(0, (N - i) * 2 * (size + space), 0);
-      this.bodies.push(spherebody);
-      this.world.addBody(spherebody);
+      let ropeBody = new CANNON.Body({ mass: i === 0 ? mass : 1 });
+      ropeBody.addShape(ropeShape);
+      ropeBody.position.set(0, (N - i)*size*10, 0);
+      this.bodies.push(ropeBody);
+      ropeBody.angularDamping=0.5;
+      ropeBody.linearDamping=0.5;
+      this.world.addBody(ropeBody);
       //demo.addVisual(spherebody);
 
-      let sphereGeo = new THREE.BoxGeometry(size, size * 2, size, 10, 10);
+      let sphereGeo = new THREE.CylinderGeometry(size, size, size*12, 10, 10);
       let material = new THREE.MeshBasicMaterial({ color: 0xababab });
       let sphereMesh = new THREE.Mesh(sphereGeo, material);
       this.meshes.push(sphereMesh);
       this.scene.add(sphereMesh);
+
+     
       // Connect this body to the last one added
       // if(i!=0){
       //     // Connect the current body to the last one
@@ -201,13 +212,31 @@ export class PendulumService {
       // }
       if (lastBody) {
         // Connect the current body to the last one
-        var c = new CANNON.LockConstraint(spherebody, lastBody);
+        var c = new CANNON.LockConstraint(ropeBody, lastBody);
         this.world.addConstraint(c);
       }
-
       // Keep track of the lastly added body
-      lastBody = spherebody;
+      lastBody = ropeBody;
     }
+
+    let ballBody = new CANNON.Body({mass: 0});
+    let ballShape = new CANNON.Sphere(0.5);
+    ballBody.addShape(ballShape);
+    ballBody.position.set(0, lastBody.position.y - 0.7, 0);
+    this.ballBodies.push(ballBody);
+    this.world.addBody(ballBody);
+
+    let ballGeo = new THREE.SphereGeometry(0.5, 20, 20);
+    let ballMat = new THREE.MeshPhongMaterial({color:0xcccccc});
+    let ballMesh = new THREE.Mesh(ballGeo,ballMat);
+    this.balls.push(ballMesh);
+    this.scene.add(ballMesh);
+
+    var c = new CANNON.LockConstraint(lastBody, ballBody);
+    this.world.addConstraint(c);
+
+    // var c = new CANNON.PointToPointConstraint(lastBody,new CANNON.Vec3(0,-size*7.5,0), ballBody,new CANNON.Vec3(0,size*7.5,0));
+    // this.world.addConstraint(c);
   }
 
 
