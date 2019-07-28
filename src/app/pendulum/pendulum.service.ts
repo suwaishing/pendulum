@@ -17,7 +17,7 @@ export class PendulumService {
   private dragControl: DragControls;
   private mouse: THREE.Vector2;
   private raycaster: THREE.Raycaster;
-  private dt = 1 / 60;
+  private dt = 1 / 45;
   //object
   private rope: THREE.LineSegments;
   private pointBall: THREE.Mesh;
@@ -114,12 +114,16 @@ export class PendulumService {
     // Update positions
     
     if(this.isDrag){
-      this.bodies[10].position.copy(this.balls[0].position);
+      this.bodies[11].position.copy(this.balls[0].position);
       //this.meshes[10].position.copy(this.balls[0].position);
+      this.bodies[11].angularDamping = 1;
+      this.bodies[11].linearDamping = 1;
   
     } else {
-      this.balls[0].position.copy(this.meshes[10].position);
-      this.balls[0].quaternion.copy(this.meshes[10].quaternion);
+      this.balls[0].position.copy(this.meshes[11].position);
+      this.balls[0].quaternion.copy(this.meshes[11].quaternion);
+      this.bodies[11].angularDamping = 0.01;
+      this.bodies[11].linearDamping = 0.01;
     }
 
     // if(!this.isTooFar){
@@ -189,7 +193,7 @@ export class PendulumService {
     quat.normalize();
     for (let i = 0; i < segment; i++) {
       // Create a new body
-      let ropeBody = new CANNON.Body({ mass: i === 0 ? mass : 2 });
+      let ropeBody = new CANNON.Body({ mass: i === 0 ? mass : .5 });
       
       ropeBody.addShape(ropeShape,new CANNON.Vec3(),quat);
       //ropeBody.addShape(ropeShape);
@@ -233,6 +237,7 @@ export class PendulumService {
     let pos = lastBody.position.y-segmentLength;
     ballBody.addShape(ropeShape,new CANNON.Vec3(0,pos-0.5,0),quat);
     ballBody.addShape(ballShape,new CANNON.Vec3(0,pos-1,0));
+    //ballBody.angularDamping=1;
     this.bodies.push(ballBody);
     this.world.addBody(ballBody);
     
@@ -253,7 +258,29 @@ export class PendulumService {
     this.world.addConstraint(c);
     //this.world.addConstraint(d);
 
-    let ballClone = ballMesh.clone();
+    //fake
+    let fake1 = new CANNON.Body({mass:.1});
+    fake1.addShape(new CANNON.Sphere(0.5));
+    //fake1.linearDamping=.99;
+    this.bodies.push(fake1);
+    this.world.addBody(fake1);
+
+    let fake1Mat = new THREE.MeshBasicMaterial({color:0xff00ff});
+    fake1Mat.opacity=0;
+    fake1Mat.transparent = true;
+    let fake1Geo = new THREE.SphereGeometry(0.5,20,20);
+    let fake1Mesh = new THREE.Mesh(fake1Geo,fake1Mat);
+    this.meshes.push(fake1Mesh);
+    this.scene.add(fake1Mesh);
+    let e = new CANNON.LockConstraint(ballBody,fake1);
+    this.world.addConstraint(e);
+    console.log(fake1Mesh);
+    console.log(ballBody);
+    //pull
+    
+    let cloneMat = new THREE.MeshBasicMaterial({opacity:0,transparent:true});
+    let ballClone = new THREE.Mesh(ballGeo,cloneMat);
+
     this.balls.push(ballClone);
     this.scene.add(ballClone);
 
