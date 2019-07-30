@@ -58,11 +58,24 @@ export class PendulumService {
     
 
     //Create Light
-    let light = new THREE.AmbientLight(0xf8bce5);
+    let light = new THREE.AmbientLight(0xfafafa,0.1);
     //let light = new THREE.AmbientLight( 0xf5bae3,2);
-    //light.position.set(0,7,5);
-    this.scene.add(light);
+    //light.position.set(0,10,0);
+    //this.scene.add(light);
 
+    let light2 = new THREE.HemisphereLight(0xafcce4,0x883ee8,0.5);
+    light2.position.set(0,20,0);
+    this.scene.add(light2);
+
+    let light3 = new THREE.PointLight(0xd8fae9,3,15,2);
+    light3.position.set(0,5,0);
+    light3.castShadow=true;
+    this.scene.add(light3);
+
+    let light4 = new THREE.PointLight(0x8e50a9,3,15,2);
+    light4.position.set(0,-5,0);
+    light4.castShadow=true;
+    this.scene.add(light4);
 
     //mouse and raycaster
     this.mouse=new THREE.Vector2();
@@ -70,7 +83,7 @@ export class PendulumService {
 
     this.initCannon();
     //Create Floor
-    //this.createGround();
+    this.createGround();
 
     //Load model
     this.addSphereChain();
@@ -112,18 +125,18 @@ export class PendulumService {
     this.world.step(this.dt);
     this.controls.update();
     // Update positions
-    
+    let lastItem = this.bodies.length-1;
     if(this.isDrag){
-      this.bodies[11].position.copy(this.balls[0].position);
+      this.bodies[lastItem].position.copy(this.balls[0].position);
       //this.meshes[10].position.copy(this.balls[0].position);
-      this.bodies[11].angularDamping = 1;
-      this.bodies[11].linearDamping = 1;
+      this.bodies[lastItem].angularDamping = .99;
+      this.bodies[lastItem].linearDamping = .99;
   
     } else {
-      this.balls[0].position.copy(this.meshes[11].position);
-      this.balls[0].quaternion.copy(this.meshes[11].quaternion);
-      this.bodies[11].angularDamping = 0.01;
-      this.bodies[11].linearDamping = 0.01;
+      this.balls[0].position.copy(this.meshes[lastItem].position);
+      this.balls[0].quaternion.copy(this.meshes[lastItem].quaternion);
+      this.bodies[lastItem].angularDamping = .01;
+      this.bodies[lastItem].linearDamping = .01;
     }
 
     // if(!this.isTooFar){
@@ -162,29 +175,43 @@ export class PendulumService {
   }
 
   createGround() {
+    //let background = new THREE.IcosahedronGeometry(20);
+    let background = new THREE.BoxGeometry(20,20,20);
+    let backgroundMat = new THREE.MeshStandardMaterial({color: 0xfffcf8, roughness:1, emissive:0x000000, side: THREE.BackSide});
+    let backgroundMesh = new THREE.Mesh(background,backgroundMat);
+    backgroundMesh.receiveShadow= true;
+    backgroundMesh.position.set(0,0,0);
+    backgroundMesh.rotation.set(0,-Math.PI/2,0);
+    backgroundMesh.position.normalize();
+
+    this.scene.add(backgroundMesh);
+
     //Graphics
-    let floorGeo = new THREE.PlaneGeometry(100, 100, 25, 25);
-    floorGeo.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
+    // let floorGeo = new THREE.PlaneGeometry(100, 100, 25, 25);
+    // floorGeo.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
+    
+    // let material = new THREE.MeshStandardMaterial();
+    // material.color = new THREE.Color(0xBA4859);
+    // //material.transparent= true;
 
-    let material = new THREE.MeshStandardMaterial();
-    material.color = new THREE.Color(0xBA4859);
-    //material.transparent= true;
+    // this.mesh = new THREE.Mesh(floorGeo, material);
+    // this.mesh.position.set(0,-3,0);
+    // this.scene.add(this.mesh);
 
-    this.mesh = new THREE.Mesh(floorGeo, material);
-    this.scene.add(this.mesh);
-
-    //Physics
-    let groundShape = new CANNON.Plane();
-    let groundBody = new CANNON.Body({ mass: 0, material: this.groundMaterial });
-    groundBody.addShape(groundShape);
-    groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
-    this.world.addBody(groundBody);
+    // //Physics
+    // let groundShape = new CANNON.Plane();
+    // let groundBody = new CANNON.Body({ mass: 0, material: this.groundMaterial });
+    // groundBody.addShape(groundShape);
+    // groundBody.position.set(0,-3,0);
+    // groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+    // this.world.addBody(groundBody);
   }
 
   addSphereChain() {
-    let size = 0.05;
-    let ropeLength = 10;
-    let segment = 10;
+    let size = 0.02;
+    let ropeLength = 12;
+    let segment = 12;
+    let radius = 0.6;
     let segmentLength = 0.5*ropeLength / segment;
     let ropeShape = new CANNON.Cylinder(size, size, segmentLength, 10);
     let mass = 0;
@@ -193,18 +220,18 @@ export class PendulumService {
     quat.normalize();
     for (let i = 0; i < segment; i++) {
       // Create a new body
-      let ropeBody = new CANNON.Body({ mass: i === 0 ? mass : .5 });
+      let ropeBody = new CANNON.Body({ mass: i === 0 ? mass : .41 });
       
       ropeBody.addShape(ropeShape,new CANNON.Vec3(),quat);
       //ropeBody.addShape(ropeShape);
       ropeBody.position.set(0, 1+(segment - i)*segmentLength, 0);
       this.bodies.push(ropeBody);
-      ropeBody.angularDamping=0.99;
-      ropeBody.linearDamping=0.99;
+      //ropeBody.angularDamping=.99;
+      //ropeBody.linearDamping=.99;
       this.world.addBody(ropeBody);
       //demo.addVisual(spherebody);
 
-      let sphereGeo = new THREE.CylinderBufferGeometry(size, size, segmentLength, 10, 10);
+      let sphereGeo = new THREE.CylinderGeometry(size, size, segmentLength*1.3, 10, 10);
       let material = new THREE.MeshBasicMaterial({ color: 0xababab });
       let sphereMesh = new THREE.Mesh(sphereGeo, material);
       this.meshes.push(sphereMesh);
@@ -227,27 +254,34 @@ export class PendulumService {
         // Connect the current body to the last one
         let c = new CANNON.LockConstraint(ropeBody, lastBody);
         this.world.addConstraint(c);
+        let d = new CANNON.DistanceConstraint(ropeBody, lastBody);
+        //d.collideConnected=false;
+        this.world.addConstraint(d);
       }
       // Keep track of the lastly added body
       lastBody = ropeBody;
     }
 
     let ballBody = new CANNON.Body({mass: 10});
-    let ballShape = new CANNON.Sphere(0.5);
+    let ballShape = new CANNON.Sphere(radius);
     let pos = lastBody.position.y-segmentLength;
-    ballBody.addShape(ropeShape,new CANNON.Vec3(0,pos-0.5,0),quat);
+    let jointShape = new CANNON.Cylinder(7*size, 7*size, segmentLength, 10);
+    ballBody.addShape(jointShape,new CANNON.Vec3(0,pos-radius,0),quat);
     ballBody.addShape(ballShape,new CANNON.Vec3(0,pos-1,0));
-    //ballBody.angularDamping=1;
+    //ballBody.angularDamping=0;
+    //ballBody.linearDamping=0;
     this.bodies.push(ballBody);
     this.world.addBody(ballBody);
     
-    let ballGeo = new THREE.SphereGeometry(0.5, 20, 20);
-    let ropee = new THREE.CylinderGeometry(size, size, segmentLength, 10, 10);
+    let ballGeo = new THREE.SphereGeometry(radius, 20, 20);
+    let ropee = new THREE.CylinderGeometry(7*size, 7*size, segmentLength, 10, 10);
     ropee.translate(0,segmentLength,0);
     ballGeo.merge(ropee);
     //ballGeo.translate(0,.36,0);
     let ballMat = new THREE.MeshPhongMaterial({color:0xcccccc});
     let ballMesh = new THREE.Mesh(ballGeo,ballMat);
+    ballMesh.castShadow=true;
+    ballMesh.receiveShadow = true;
     this.meshes.push(ballMesh);
     this.scene.add(ballMesh);
 
@@ -256,29 +290,31 @@ export class PendulumService {
     var d = new CANNON.DistanceConstraint(lastBody,ballBody,1);
     var c = new CANNON.PointToPointConstraint(lastBody,new CANNON.Vec3(0,-0.38-segmentLength/4,0), ballBody,new CANNON.Vec3(0,0.38+segmentLength/4,0));
     this.world.addConstraint(c);
-    //this.world.addConstraint(d);
+    this.world.addConstraint(d);
 
     //fake
     let fake1 = new CANNON.Body({mass:.1});
-    fake1.addShape(new CANNON.Sphere(0.5));
-    //fake1.linearDamping=.99;
+    fake1.addShape(new CANNON.Sphere(radius));
+    //fake1.linearDamping=1;
+    //fake1.angularDamping=1;
     this.bodies.push(fake1);
     this.world.addBody(fake1);
 
     let fake1Mat = new THREE.MeshBasicMaterial({color:0xff00ff});
     fake1Mat.opacity=0;
     fake1Mat.transparent = true;
-    let fake1Geo = new THREE.SphereGeometry(0.5,20,20);
+    let fake1Geo = new THREE.SphereGeometry(radius,20,20);
     let fake1Mesh = new THREE.Mesh(fake1Geo,fake1Mat);
     this.meshes.push(fake1Mesh);
     this.scene.add(fake1Mesh);
     let e = new CANNON.LockConstraint(ballBody,fake1);
     this.world.addConstraint(e);
-    console.log(fake1Mesh);
-    console.log(ballBody);
+    //console.log(fake1Mesh);
+    //console.log(ballBody);
     //pull
     
     let cloneMat = new THREE.MeshBasicMaterial({opacity:0,transparent:true});
+    //let cloneMat = new THREE.MeshBasicMaterial({color:0x00ff00});
     let ballClone = new THREE.Mesh(ballGeo,cloneMat);
 
     this.balls.push(ballClone);
