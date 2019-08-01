@@ -31,6 +31,9 @@ export class PendulumService {
   private isDrag= false;
   private isTooFar:boolean;
   private lastCur:THREE.Vector3;
+  private lastBallCannon;
+  private DragBallTHREE;
+  private interval01;
   constructor() { }
 
   createScene(id: string) {
@@ -98,21 +101,32 @@ export class PendulumService {
       this.render();
     })
 
+    window.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+
+ 
+    })
+
+    window.addEventListener('mouseup', (e) => {
+      
+    })
+
     window.addEventListener('resize', () => {
       this.resize();
     })
     this.dragControl.addEventListener('dragstart', () =>{
       this.controls.enabled = false;
       this.isDrag=true;
+      this.interval01=setInterval(()=>{
+        this.testing();
+      },15);
       //this.bodies[this.bodies.length-1].position.copy(this.balls[0].position);
-    });
-    this.dragControl.addEventListener('drag', () =>{
-
     });
     this.dragControl.addEventListener('dragend', () =>{
       this.controls.enabled = true;
       this.isDrag=false;
-      
+      this.endtesting();
+      clearInterval(this.interval01);
     });
   }
 
@@ -125,20 +139,27 @@ export class PendulumService {
     this.world.step(this.dt);
     this.controls.update();
     // Update positions
-    let lastItem = this.bodies.length-1;
-    if(this.isDrag){
-      this.bodies[lastItem].position.copy(this.balls[0].position);
+    // let lastItem = this.bodies.length-1;
+    // if(this.isDrag){
+    //   this.bodies[lastItem].position.copy(this.balls[0].position);
       //this.meshes[10].position.copy(this.balls[0].position);
-      this.bodies[lastItem].angularDamping = .99;
-      this.bodies[lastItem].linearDamping = .99;
-  
-    } else {
-      this.balls[0].position.copy(this.meshes[lastItem].position);
-      this.balls[0].quaternion.copy(this.meshes[lastItem].quaternion);
-      this.bodies[lastItem].angularDamping = .01;
-      this.bodies[lastItem].linearDamping = .01;
-    }
+      // this.bodies[lastItem].angularDamping = .99;
+      // this.bodies[lastItem].linearDamping = .99;
+      // this.bodies[lastItem-1].angularDamping = .99;
+      // this.bodies[lastItem-1].linearDamping = .5;
+    // } else {
+    //   this.balls[0].position.copy(this.meshes[lastItem].position);
+    //   this.balls[0].quaternion.copy(this.meshes[lastItem].quaternion);
+    //   // this.bodies[lastItem].angularDamping = .01;
+    //   // this.bodies[lastItem].linearDamping = .01;
+    //   // this.bodies[lastItem-1].angularDamping = .05;
+    //   // this.bodies[lastItem-1].linearDamping = .05;
+    // }
+    if(this.isDrag){
 
+    }else{
+      this.DragBallTHREE.position.copy(this.lastBallCannon.position);
+    }
     // if(!this.isTooFar){
     //   this.bodies[this.bodies.length-1].position= this.balls[0].position;
     // } else{
@@ -171,7 +192,6 @@ export class PendulumService {
 
     var ball_ground = new CANNON.ContactMaterial(this.groundMaterial, this.physicMaterial, { friction: 0.3, restitution: 0.3 });
     this.world.addContactMaterial(ball_ground);
-
   }
 
   createGround() {
@@ -210,73 +230,119 @@ export class PendulumService {
   addSphereChain() {
     let size = 0.02;
     let ropeLength = 12;
-    let segment = 12;
-    let radius = 0.6;
-    let segmentLength = 0.5*ropeLength / segment;
+    let segment = 24;
+    let radius = 0.5;
+    // let segmentLength = 0.5*ropeLength / segment;
+    let segmentLength = 0.1;
     let ropeShape = new CANNON.Cylinder(size, size, segmentLength, 10);
     let mass = 0;
     let lastBody = null;
-    let quat = new CANNON.Quaternion(0.7071,0,0,0.7071);
+    let quat = new CANNON.Quaternion(0.5,0,0,0.5);
     quat.normalize();
-    for (let i = 0; i < segment; i++) {
-      // Create a new body
-      let ropeBody = new CANNON.Body({ mass: i === 0 ? mass : .41 });
-      
-      ropeBody.addShape(ropeShape,new CANNON.Vec3(),quat);
-      //ropeBody.addShape(ropeShape);
-      ropeBody.position.set(0, 1+(segment - i)*segmentLength, 0);
-      this.bodies.push(ropeBody);
-      //ropeBody.angularDamping=.99;
-      //ropeBody.linearDamping=.99;
-      this.world.addBody(ropeBody);
-      //demo.addVisual(spherebody);
+    // for (let i = 0; i < segment; i++) {
+    //   // Create a new body
+    //   let ropeBody = new CANNON.Body({ mass: i === 0 ? mass : 1 });
+     
+    //   ropeBody.addShape(ropeShape,new CANNON.Vec3(),quat);
+    //   //ropeBody.addShape(ropeShape);
+    //   ropeBody.position.set(0,(segment - i)*segmentLength, 0);
+    //   this.bodies.push(ropeBody);
+    //   ropeBody.angularDamping=.5;
+    //   ropeBody.linearDamping=.5;
+    //   this.world.addBody(ropeBody);
+    //   //demo.addVisual(spherebody);
 
-      let sphereGeo = new THREE.CylinderGeometry(size, size, segmentLength*1.3, 10, 10);
-      let material = new THREE.MeshBasicMaterial({ color: 0xababab });
-      let sphereMesh = new THREE.Mesh(sphereGeo, material);
-      this.meshes.push(sphereMesh);
-      this.scene.add(sphereMesh);
+    //   let sphereGeo = new THREE.CylinderGeometry(size, size, segmentLength*1, 10, 10);
+    //   let material = new THREE.MeshBasicMaterial({ color: 0xababab });
+    //   let sphereMesh = new THREE.Mesh(sphereGeo, material);
+    //   this.meshes.push(sphereMesh);
+    //   this.scene.add(sphereMesh);
 
      
-      // Connect this body to the last one added
-      // if(i!=0){
-      //     // Connect the current body to the last one
-      //     // We connect two corner points to each other.
-      //     var c1 = new CANNON.PointToPointConstraint(ropeBody,new CANNON.Vec3(-size,size*3,0),lastBody,new CANNON.Vec3(-size,-size*3,0));
-      //     var c2 = new CANNON.PointToPointConstraint(ropeBody,new CANNON.Vec3(size,size*3,0),lastBody,new CANNON.Vec3(size,-size*3,0));
-      //     this.world.addConstraint(c1);
-      //     this.world.addConstraint(c2);
-      // } else {
-      //     // First body is now static. The rest should be dynamic.
-      //     mass=0.3;
-      // }
-      if (lastBody) {
-        // Connect the current body to the last one
-        let c = new CANNON.LockConstraint(ropeBody, lastBody);
-        this.world.addConstraint(c);
-        let d = new CANNON.DistanceConstraint(ropeBody, lastBody);
-        //d.collideConnected=false;
-        this.world.addConstraint(d);
-      }
-      // Keep track of the lastly added body
-      lastBody = ropeBody;
-    }
+    //   // Connect this body to the last one added
+    //   // if(i!=0){
+    //   //     // Connect the current body to the last one
+    //   //     // We connect two corner points to each other.
+    //   //     var c1 = new CANNON.PointToPointConstraint(ropeBody,new CANNON.Vec3(-size,size*3,0),lastBody,new CANNON.Vec3(-size,-size*3,0));
+    //   //     var c2 = new CANNON.PointToPointConstraint(ropeBody,new CANNON.Vec3(size,size*3,0),lastBody,new CANNON.Vec3(size,-size*3,0));
+    //   //     this.world.addConstraint(c1);
+    //   //     this.world.addConstraint(c2);
+    //   // } else {
+    //   //     // First body is now static. The rest should be dynamic.
+    //   //     mass=0.3;
+    //   // }
+    //   if (lastBody) {
+    //     // Connect the current body to the last one
+    //     let c = new CANNON.LockConstraint(ropeBody, lastBody);
+    //     this.world.addConstraint(c);
+    //     // let d = new CANNON.DistanceConstraint(ropeBody, lastBody);
+    //     //d.collideConnected=false;
+    //     // this.world.addConstraint(d);
+    //   }
+    //   // Keep track of the lastly added body
+    //   lastBody = ropeBody;
+    // }
 
-    let ballBody = new CANNON.Body({mass: 10});
+
+
+    let notgaysize = 0.05;
+    // NOT GAY
+    let NGropeshape = new CANNON.Sphere(0.1);
+    let ropeBody = new CANNON.Body({ mass : 0 });
+    ropeBody.addShape(NGropeshape,new CANNON.Vec3(),quat);
+    ropeBody.position.set(0,4,0);
+    this.bodies.push(ropeBody);
+    // ropeBody.angularDamping=.5;
+    // ropeBody.linearDamping=.5;
+    this.world.addBody(ropeBody);
+
+    let sphereGeo = new THREE.SphereBufferGeometry(notgaysize, 8, 8);
+    let material = new THREE.MeshBasicMaterial({ color: 0xf0f0f0 });
+    let sphereMesh = new THREE.Mesh(sphereGeo, material);
+    this.meshes.push(sphereMesh);
+    this.scene.add(sphereMesh);
+
+    // NOT GAY 02
+    let NGropeshape02 = new CANNON.Cylinder(notgaysize, notgaysize, 4, 8);
+    let ropeBody02 = new CANNON.Body({ mass : .1 });
+    ropeBody02.addShape(NGropeshape02,new CANNON.Vec3(),quat);
+    ropeBody02.position.set(0,2,0);
+    this.bodies.push(ropeBody02);
+    ropeBody02.angularDamping=.5;
+    ropeBody02.linearDamping=.5;
+    this.world.addBody(ropeBody02);
+
+    let sphereGeo02 = new THREE.CylinderGeometry(notgaysize, notgaysize, 4, 8, 8);
+    let material02 = new THREE.MeshBasicMaterial({ color: 0xababab });
+    let sphereMesh02 = new THREE.Mesh(sphereGeo02, material02);
+    this.meshes.push(sphereMesh02);
+    this.scene.add(sphereMesh02);
+
+
+    let c = new CANNON.PointToPointConstraint(ropeBody,new CANNON.Vec3(0,0,0),ropeBody02,new CANNON.Vec3(0,2,0));
+    this.world.addConstraint(c);
+    // let c = new CANNON.LockConstraint(ropeBody, ropeBody02);
+    // this.world.addConstraint(c);
+
+
+
+    this.lastBallCannon = new CANNON.Body({mass: .1});
     let ballShape = new CANNON.Sphere(radius);
-    let pos = lastBody.position.y-segmentLength;
-    let jointShape = new CANNON.Cylinder(7*size, 7*size, segmentLength, 10);
-    ballBody.addShape(jointShape,new CANNON.Vec3(0,pos-radius,0),quat);
-    ballBody.addShape(ballShape,new CANNON.Vec3(0,pos-1,0));
-    //ballBody.angularDamping=0;
-    //ballBody.linearDamping=0;
-    this.bodies.push(ballBody);
-    this.world.addBody(ballBody);
+    // let pos = lastBody.position.y-segmentLength;
+    // let jointShape = new CANNON.Cylinder(size, size, segmentLength, 10);
+    // ballBody.addShape(jointShape,new CANNON.Vec3(0,radius+segmentLength/2,0),quat);
+    this.lastBallCannon.addShape(ballShape);
+    // this.lastBallCannon.angularDamping=.5;
+    // this.lastBallCannon.linearDamping=.5;
+
+    this.lastBallCannon.position.set(0,0-radius,0)
+    this.bodies.push(this.lastBallCannon);
+    this.world.addBody(this.lastBallCannon);
     
     let ballGeo = new THREE.SphereGeometry(radius, 20, 20);
-    let ropee = new THREE.CylinderGeometry(7*size, 7*size, segmentLength, 10, 10);
-    ropee.translate(0,segmentLength,0);
-    ballGeo.merge(ropee);
+    let ropee = new THREE.CylinderGeometry(size, size, segmentLength, 10, 10);
+    // ropee.translate(0,radius+segmentLength/2,0);
+    // ballGeo.merge(ropee);
     //ballGeo.translate(0,.36,0);
     let ballMat = new THREE.MeshPhongMaterial({color:0xcccccc});
     let ballMesh = new THREE.Mesh(ballGeo,ballMat);
@@ -285,41 +351,51 @@ export class PendulumService {
     this.meshes.push(ballMesh);
     this.scene.add(ballMesh);
 
-    // let d = new CANNON.LockConstraint(lastBody, ballBody);
-    // this.world.addConstraint(d);
-    var d = new CANNON.DistanceConstraint(lastBody,ballBody,1);
-    var c = new CANNON.PointToPointConstraint(lastBody,new CANNON.Vec3(0,-0.38-segmentLength/4,0), ballBody,new CANNON.Vec3(0,0.38+segmentLength/4,0));
-    this.world.addConstraint(c);
+    let d = new CANNON.LockConstraint(ropeBody02, this.lastBallCannon);
+    //d.collideConnected = false;
     this.world.addConstraint(d);
-
-    //fake
-    let fake1 = new CANNON.Body({mass:.1});
-    fake1.addShape(new CANNON.Sphere(radius));
-    //fake1.linearDamping=1;
-    //fake1.angularDamping=1;
-    this.bodies.push(fake1);
-    this.world.addBody(fake1);
-
-    let fake1Mat = new THREE.MeshBasicMaterial({color:0xff00ff});
-    fake1Mat.opacity=0;
-    fake1Mat.transparent = true;
-    let fake1Geo = new THREE.SphereGeometry(radius,20,20);
-    let fake1Mesh = new THREE.Mesh(fake1Geo,fake1Mat);
-    this.meshes.push(fake1Mesh);
-    this.scene.add(fake1Mesh);
-    let e = new CANNON.LockConstraint(ballBody,fake1);
-    this.world.addConstraint(e);
-    //console.log(fake1Mesh);
-    //console.log(ballBody);
-    //pull
     
-    let cloneMat = new THREE.MeshBasicMaterial({opacity:0,transparent:true});
+    // var d = new CANNON.DistanceConstraint(lastBody,ballBody,.9);
+    // var c = new CANNON.PointToPointConstraint(lastBody,new CANNON.Vec3(0,-0.4-segmentLength/4,0), ballBody,new CANNON.Vec3(0,0.4+segmentLength/4,0));
+    // this.world.addConstraint(c);
+    // this.world.addConstraint(d);
+
+    // fake
+    // let fake1 = new CANNON.Body({mass:1});
+    // fake1.addShape(new CANNON.Box(new CANNON.Vec3(0.1,0.1,0.1)));
+    // // fake1.linearDamping=1;
+    // // fake1.angularDamping=1;
+    // fake1.position.set(0,ballBody.position.y,0);
+    // this.bodies.push(fake1);
+    // this.world.addBody(fake1);
+
+    // let fake1Mat = new THREE.MeshBasicMaterial({color:0xff00ff});
+    // fake1Mat.opacity=1;
+    // fake1Mat.transparent = true;
+    // let fake1Geo = new THREE.SphereGeometry(radius,20,20);
+    // let fake1Mesh = new THREE.Mesh(fake1Geo,fake1Mat);
+    // this.meshes.push(fake1Mesh);
+    // this.scene.add(fake1Mesh);
+    // let e = new CANNON.LockConstraint(ballBody,fake1);
+    // this.world.addConstraint(e);
+
+    // // pull
+    ballGeo = new THREE.SphereGeometry(radius*.5, 20, 20);
+    let cloneMat = new THREE.MeshBasicMaterial({opacity:1,transparent:true});
     //let cloneMat = new THREE.MeshBasicMaterial({color:0x00ff00});
-    let ballClone = new THREE.Mesh(ballGeo,cloneMat);
+    this.DragBallTHREE = new THREE.Mesh(ballGeo,cloneMat);
 
-    this.balls.push(ballClone);
-    this.scene.add(ballClone);
+    this.balls.push(this.DragBallTHREE);
+    this.scene.add(this.DragBallTHREE);
 
+  }
+
+  testing(){
+    this.world.gravity.set(this.DragBallTHREE.position.x,this.DragBallTHREE.position.y,this.DragBallTHREE.position.z);
+  }
+
+  endtesting(){
+    this.world.gravity.set(0,-10,0);
   }
 
   tooFar(cursorPos:THREE.Vector3){
