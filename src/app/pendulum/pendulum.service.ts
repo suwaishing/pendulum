@@ -117,19 +117,13 @@ export class PendulumService {
     this.dragControl.addEventListener('dragstart', () =>{
       this.controls.enabled = false;
       this.isDrag=true;
-      this.interval01=setInterval(()=>{
-        let lastItem = this.meshes.length-1;
-        let start = this.meshes[lastItem].position;
-        let end = this.balls[0].position;
-        this.testing(start,end);
-      },15);
+      
       //this.bodies[this.bodies.length-1].position.copy(this.balls[0].position);
     });
     this.dragControl.addEventListener('dragend', () =>{
       this.controls.enabled = true;
       this.isDrag=false;
       this.endtesting();
-      clearInterval(this.interval01);
     });
   }
 
@@ -159,6 +153,17 @@ export class PendulumService {
     //   // this.bodies[lastItem-1].linearDamping = .05;
     // }
     if(this.isDrag){
+      let lastItem = this.meshes.length-1;
+      let start = this.meshes[lastItem].position;
+      let end = this.balls[0].position;
+      // let startLength = start.length().toPrecision(3);
+      // let endLength = end.length().toPrecision(3);
+      // if(startLength==endLength){
+      //   this.lastBallCannon.position.copy(this.DragBallTHREE.position);
+      //   this.lastBallCannon.quaternion.copy(this.DragBallTHREE.quaternion);
+      // } else {
+        this.testing(start,end);
+      // }
       
     }else{
       this.DragBallTHREE.position.copy(this.lastBallCannon.position);
@@ -393,19 +398,31 @@ export class PendulumService {
 
   testing(start:THREE.Vector3,end:THREE.Vector3){
     //this.world.gravity.set(this.DragBallTHREE.position.x,this.DragBallTHREE.position.y,this.DragBallTHREE.position.z);
-    let direction = new THREE.Vector3();
-    let tweenTime =3;
-    direction.subVectors(end,start);
-    let totalLength = direction.length();
+    // let direction = new THREE.Vector3();
+    // let tweenTime =3;
+    // direction.subVectors(end,start);
+    // let totalLength = direction.length();
+    // direction.normalize();
+
+    // let speed = 5;
+    // let lastItem = this.bodies.length-1;
+    // direction.multiplyScalar(speed);
+    
+    // this.bodies[lastItem].velocity.set(direction.x,direction.y,direction.z);
+
+
+    let direction = new CANNON.Vec3();
+    let endP = new CANNON.Vec3(end.x,end.y,end.z);
+    let startP = new CANNON.Vec3(start.x,start.y,start.z);
+    endP.vsub(startP, direction);
+
+    let totalLength = this.distance(direction.x,direction.y,direction.z,0,0,0);
     direction.normalize();
 
-    let speed = 5;
+    let tweentime= 0.5;
     let lastItem = this.bodies.length-1;
-    direction.multiplyScalar(speed);
-    
-    this.bodies[lastItem].velocity.set(direction.x,direction.y,direction.z);
-    console.log(this.bodies[lastItem].velocity)
-
+    let speed = totalLength / tweentime;
+    direction.scale(speed, this.bodies[lastItem].velocity);
   }
 
   endtesting(){
@@ -413,6 +430,13 @@ export class PendulumService {
     let lastItem = this.bodies.length-1;
     this.bodies[lastItem].velocity.set(0,0,0);
     //this.lastBallCannon.position.copy(end);
+  }
+
+  distance(x,y,z,vx,vy,vz){
+    var dx = x-vx;
+    var dy = y-vy;
+    var dz = z-vz;
+    return Math.sqrt(dx*dx + dy*dy + dz*dz);
   }
 
   tooFar(cursorPos:THREE.Vector3){
