@@ -91,12 +91,21 @@ export class PendulumService {
       this.controls.enabled = false;
       //this.dragDirection();
       this.isDrag=true;
+<<<<<<< HEAD
+=======
+      
+      //this.bodies[this.bodies.length-1].position.copy(this.balls[0].position);
+>>>>>>> 9aa122bf39e3f6914fbe226ec1340e587e27f9bd
     });
 
     this.dragControl.addEventListener('dragend', () =>{
       this.controls.enabled = true;
       //this.removeDragDirection();
       this.isDrag=false;
+<<<<<<< HEAD
+=======
+      this.endtesting();
+>>>>>>> 9aa122bf39e3f6914fbe226ec1340e587e27f9bd
     });
   }
 
@@ -109,6 +118,7 @@ export class PendulumService {
     this.controls.update();
 
     if(this.isDrag){
+<<<<<<< HEAD
       for (let i = 0; i < this.lastBallsMesh.length; i++) {
         const lastBall = this.lastBallsMesh[0];
         let start = this.meshes[lastBall].position;
@@ -119,6 +129,20 @@ export class PendulumService {
       // let start = this.meshes[lastItem].position;
       // let end = this.balls[0].position;
       // this.testing(start,end);
+=======
+      let lastItem = this.meshes.length-1;
+      let start = this.meshes[lastItem].position;
+      let end = this.balls[0].position;
+      // let startLength = start.length().toPrecision(3);
+      // let endLength = end.length().toPrecision(3);
+      // if(startLength==endLength){
+      //   this.lastBallCannon.position.copy(this.DragBallTHREE.position);
+      //   this.lastBallCannon.quaternion.copy(this.DragBallTHREE.quaternion);
+      // } else {
+        this.testing(start,end);
+      // }
+      
+>>>>>>> 9aa122bf39e3f6914fbe226ec1340e587e27f9bd
     }else{
 
       this.DragBallTHREE.position.copy(this.lastBallCannon.position);
@@ -234,6 +258,7 @@ export class PendulumService {
 
   testing(start:THREE.Vector3,end:THREE.Vector3){
     //this.world.gravity.set(this.DragBallTHREE.position.x,this.DragBallTHREE.position.y,this.DragBallTHREE.position.z);
+<<<<<<< HEAD
     let direction = new THREE.Vector3();
     direction.subVectors(end,start);
     let totalLength = direction.length();
@@ -246,6 +271,68 @@ export class PendulumService {
     this.bodies[lastItem].velocity.set(direction.x,direction.y,direction.z);
   }
 
+=======
+    // let direction = new THREE.Vector3();
+    // let tweenTime =3;
+    // direction.subVectors(end,start);
+    // let totalLength = direction.length();
+    // direction.normalize();
+
+    // let speed = 5;
+    // let lastItem = this.bodies.length-1;
+    // direction.multiplyScalar(speed);
+    
+    // this.bodies[lastItem].velocity.set(direction.x,direction.y,direction.z);
+
+
+    let direction = new CANNON.Vec3();
+    let endP = new CANNON.Vec3(end.x,end.y,end.z);
+    let startP = new CANNON.Vec3(start.x,start.y,start.z);
+    endP.vsub(startP, direction);
+
+    let totalLength = this.distance(direction.x,direction.y,direction.z,0,0,0);
+    direction.normalize();
+
+    let tweentime= 0.5;
+    let lastItem = this.bodies.length-1;
+    let speed = totalLength / tweentime;
+    direction.scale(speed, this.bodies[lastItem].velocity);
+  }
+
+  endtesting(){
+    //this.world.gravity.set(0,-10,0);
+    let lastItem = this.bodies.length-1;
+    this.bodies[lastItem].velocity.set(0,0,0);
+    //this.lastBallCannon.position.copy(end);
+  }
+
+  distance(x,y,z,vx,vy,vz){
+    var dx = x-vx;
+    var dy = y-vy;
+    var dz = z-vz;
+    return Math.sqrt(dx*dx + dy*dy + dz*dz);
+  }
+
+  tooFar(cursorPos:THREE.Vector3){
+    let distance = cursorPos.distanceTo(this.bodies[0].position);
+    let lastItem = this.meshes.length-1;
+    console.log(distance,this.bodies[lastItem].position);
+    setTimeout(() => {
+      if (distance>6.1){
+        this.bodies[lastItem].position.copy(this.lastCur);
+        this.meshes[lastItem].position.copy(this.lastCur);
+          //this.bodies[lastItem].quaternion.copy(this.lastCur);
+      } else {
+        this.bodies[lastItem].position.copy(cursorPos);
+        this.meshes[lastItem].position.copy(cursorPos);
+        this.lastCur = cursorPos;
+          //this.bodies[lastItem].quaternion.copy(cursorPos);
+      }
+    }, 100);
+    
+  }
+  
+>>>>>>> 9aa122bf39e3f6914fbe226ec1340e587e27f9bd
 }
 
 //DragControl function threejs
