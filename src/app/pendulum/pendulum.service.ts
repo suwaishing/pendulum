@@ -21,12 +21,8 @@ export class PendulumService {
   private meshes: any[] = [];
   private balls: any[] = [];
   private lastBallsMesh: any[] = [];
-  private lastBallsBody: any[] = [];
   private physicMaterial: CANNON.Material;
-  private groundMaterial: CANNON.Material;
-  private isDrag= false;
-  private lastBallCannon;
-  private DragBallTHREE;
+  private isDrag = false;
   constructor() { }
 
   createScene(id: string) {
@@ -45,26 +41,26 @@ export class PendulumService {
     //Create scene
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, .1, 1000);
-    this.camera.position.set(8,2,10);
+    this.camera.position.set(0, 6, 12);
     this.scene.add(this.camera);
 
-    
-    
+
+
 
     //Create Light
 
-    let light2 = new THREE.HemisphereLight(0xafcce4,0x883ee8,0.5);
-    light2.position.set(0,20,0);
+    let light2 = new THREE.HemisphereLight(0xafcce4, 0x883ee8, 0.5);
+    light2.position.set(0, 20, 0);
     this.scene.add(light2);
 
-    let light3 = new THREE.PointLight(0xd8fae9,3,15,2);
-    light3.position.set(0,5,0);
-    light3.castShadow=true;
+    let light3 = new THREE.PointLight(0xd8fae9, 3, 15, 2);
+    light3.position.set(0, 5, 0);
+    light3.castShadow = true;
     this.scene.add(light3);
 
-    let light4 = new THREE.PointLight(0x8e50a9,3,15,2);
-    light4.position.set(0,-5,0);
-    light4.castShadow=true;
+    let light4 = new THREE.PointLight(0x8e50a9, 3, 15, 2);
+    light4.position.set(0, -5, 0);
+    light4.castShadow = true;
     this.scene.add(light4);
 
     this.initCannon();
@@ -73,12 +69,13 @@ export class PendulumService {
 
     //Load model
     this.addSphereChain(0);
-    this.addSphereChain(2);
+    this.addSphereChain(-1.5);
+    this.addSphereChain(1.5);
     this.addSphereChain(-3);
-    console.log(this.lastBallsMesh);
-    console.log(this.balls);
+    this.addSphereChain(3);
     //this.addRope();
-    this.controls = new OrbitControls(this.camera,this.renderer.domElement);
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.enableZoom = false;
     this.dragControl = new DragControls(this.balls, this.camera, this.renderer.domElement);
   }
 
@@ -91,16 +88,16 @@ export class PendulumService {
       this.resize();
     })
 
-    this.dragControl.addEventListener('dragstart', () =>{
+    this.dragControl.addEventListener('dragstart', () => {
       this.controls.enabled = false;
       //this.dragDirection();
-      this.isDrag=true;
+      this.isDrag = true;
     });
 
-    this.dragControl.addEventListener('dragend', () =>{
+    this.dragControl.addEventListener('dragend', () => {
       this.controls.enabled = true;
       //this.removeDragDirection();
-      this.isDrag=false;
+      this.isDrag = false;
     });
   }
 
@@ -116,37 +113,16 @@ export class PendulumService {
       const lastBall = this.lastBallsMesh[i];
       let start = this.meshes[lastBall].position;
       let end = this.balls[i].position;
-      let distance= start.distanceTo(end).toFixed(1);
+      let distance = start.distanceTo(end).toFixed(1);
       parseFloat(distance);
-      if (!this.isDrag&&distance<0.1) {
-        this.balls[i].position.copy(this.bodies[lastBall].position);
+      if (this.isDrag && distance > 0.1) {
+        this.testing(start, end, lastBall);
       } else {
-        
-        this.testing(start,end,lastBall);
+        this.balls[i].position.copy(this.bodies[lastBall].position);
+
       }
     }
-    // if(this.isDrag){
-    //   for (let i = 0; i < this.lastBallsMesh.length; i++) {
-    //     const lastBall = this.lastBallsMesh[i];
-    //     let start = this.meshes[lastBall].position;
-    //     let end = this.balls[i].position;
-    //     let distance = start.distanceTo(end);
-    //     if (distance>0.4) {
-          
-    //     this.testing(start,end,lastBall);
-    //     }
-    //   }
-    //   // let lastItem = this.meshes.length-1;
-    //   // let start = this.meshes[lastItem].position;
-    //   // let end = this.balls[0].position;
-    //   // this.testing(start,end);
-    // }else{
-    //   for (let i = 0; i < this.lastBallsMesh.length; i++) {
-    //     const lastBall = this.lastBallsMesh[i];
-    //     this.balls[i].position.copy(this.bodies[lastBall].position);
-    //   }
-    //   //this.DragBallTHREE.position.copy(lastBallCannon.position);
-    // }
+
     for (let i = 0; i < this.meshes.length; i++) {
       this.meshes[i].position.copy(this.bodies[i].position);
       this.meshes[i].quaternion.copy(this.bodies[i].quaternion);
@@ -165,101 +141,99 @@ export class PendulumService {
     this.world.gravity.set(0, -10, 0);
     //this.world.broadphase=new CANNON.NaiveBroadphase();
 
-    //ground material
-    this.groundMaterial = new CANNON.Material();
 
     //ball material
     this.physicMaterial = new CANNON.Material();
 
-    var ball_ground = new CANNON.ContactMaterial(this.groundMaterial, this.physicMaterial, { friction: 0.3, restitution: 0.3 });
-    this.world.addContactMaterial(ball_ground);
+    let ball_ball = new CANNON.ContactMaterial(this.physicMaterial, this.physicMaterial, { friction: 0.9, restitution: 0.9 });
+    this.world.addContactMaterial(ball_ball);
   }
 
   createGround() {
     //let background = new THREE.IcosahedronGeometry(20);
-    let background = new THREE.BoxGeometry(20,20,20);
-    let backgroundMat = new THREE.MeshStandardMaterial({color: 0xfffcf8, roughness:1, emissive:0x000000, side: THREE.BackSide});
-    let backgroundMesh = new THREE.Mesh(background,backgroundMat);
-    backgroundMesh.receiveShadow= true;
-    backgroundMesh.position.set(0,0,0);
-    backgroundMesh.rotation.set(0,-Math.PI/2,0);
+    let background = new THREE.BoxGeometry(20, 20, 20);
+    let backgroundMat = new THREE.MeshStandardMaterial({ color: 0xfffcf8, roughness: 1, emissive: 0x000000, side: THREE.BackSide });
+    let backgroundMesh = new THREE.Mesh(background, backgroundMat);
+    backgroundMesh.receiveShadow = true;
+    backgroundMesh.position.set(0, 0, 0);
+    backgroundMesh.rotation.set(0, -Math.PI / 2, 0);
     backgroundMesh.position.normalize();
     this.scene.add(backgroundMesh);
   }
 
-  addSphereChain(x:number) {
+  addSphereChain(x: number) {
     let radius = 0.5;
-    let quat = new CANNON.Quaternion(0.5,0,0,0.5);
+    let quat = new CANNON.Quaternion(0.5, 0, 0, 0.5);
     quat.normalize();
     let size = 0.05;
 
     // Holding sphere
     let holdShape = new CANNON.Sphere(0.1);
-    let holdPoint = new CANNON.Body({ mass : 0 });
-    holdPoint.addShape(holdShape,new CANNON.Vec3());
-    holdPoint.position.set(x,4,0);
+    let holdPoint = new CANNON.Body({ mass: 0 });
+    holdPoint.addShape(holdShape, new CANNON.Vec3());
+    holdPoint.position.set(x, 5, 0);
     this.bodies.push(holdPoint);
     this.world.addBody(holdPoint);
 
     let sphereGeo = new THREE.SphereBufferGeometry(size, 8, 8);
-    let material = new THREE.MeshBasicMaterial({ color: 0xf0f0f0 });
+    let material = new THREE.MeshBasicMaterial({color:0xa09999});
     let sphereMesh = new THREE.Mesh(sphereGeo, material);
     this.meshes.push(sphereMesh);
     this.scene.add(sphereMesh);
 
     // Rope
     let ropeShape = new CANNON.Cylinder(size, size, 4, 8);
-    let ropeBody = new CANNON.Body({ mass : .1 });
-    ropeBody.addShape(ropeShape,new CANNON.Vec3(),quat);
-    ropeBody.position.set(x,2,0);
+    let ropeBody = new CANNON.Body({ mass: .1 });
+    ropeBody.addShape(ropeShape, new CANNON.Vec3(), quat);
+    ropeBody.position.set(x, 2, 0);
     this.bodies.push(ropeBody);
-    ropeBody.angularDamping=.5;
-    ropeBody.linearDamping=.5;
+    // ropeBody.angularDamping=.5;
+    // ropeBody.linearDamping=.5;
     this.world.addBody(ropeBody);
 
     let ropeGeo = new THREE.CylinderGeometry(size, size, 4, 8, 8);
-    let material02 = new THREE.MeshBasicMaterial({ color: 0xababab });
+    let material02 = new THREE.MeshBasicMaterial({color:0xa09999});
     let sphereMesh02 = new THREE.Mesh(ropeGeo, material02);
     this.meshes.push(sphereMesh02);
     this.scene.add(sphereMesh02);
 
-    let c = new CANNON.PointToPointConstraint(holdPoint,new CANNON.Vec3(0,0,0),ropeBody,new CANNON.Vec3(0,2,0));
+    let c = new CANNON.PointToPointConstraint(holdPoint, new CANNON.Vec3(0, 0, 0), ropeBody, new CANNON.Vec3(0, 2, 0));
     this.world.addConstraint(c);
 
     // Balls
-    let lastBallCannon = new CANNON.Body({mass: .1});
+    let lastBallCannon = new CANNON.Body({ mass: .1, material: this.physicMaterial });
     let ballShape = new CANNON.Sphere(radius);
     lastBallCannon.addShape(ballShape);
 
-    lastBallCannon.position.set(x,0-radius,0);
+    lastBallCannon.position.set(x, 0 - radius, 0);
     this.bodies.push(lastBallCannon);
     this.world.addBody(lastBallCannon);
-    
+
     let ballGeo = new THREE.SphereGeometry(radius, 20, 20);
-    let ballMat = new THREE.MeshPhongMaterial({color:0xcccccc});
-    let ballMesh = new THREE.Mesh(ballGeo,ballMat);
-    ballMesh.castShadow=true;
+    let ballMat = new THREE.MeshPhongMaterial({ color: 0xcccccc });
+    let ballMesh = new THREE.Mesh(ballGeo, ballMat);
+    ballMesh.castShadow = true;
     ballMesh.receiveShadow = true;
     this.meshes.push(ballMesh);
     this.scene.add(ballMesh);
-    
+
     this.lastBallsMesh.push(this.meshes.indexOf(ballMesh));
 
     let d = new CANNON.LockConstraint(ropeBody, lastBallCannon);
     this.world.addConstraint(d);
-    
+
     // pull
-    let cloneMat = new THREE.MeshBasicMaterial({opacity:1,transparent:true});
-    let DragBallTHREE = new THREE.Mesh(ballGeo,cloneMat);
+    let cloneMat = new THREE.MeshBasicMaterial({ opacity: 0, transparent: true });
+    let DragBallTHREE = new THREE.Mesh(ballGeo, cloneMat);
 
     this.balls.push(DragBallTHREE);
     this.scene.add(DragBallTHREE);
   }
 
-  testing(start:THREE.Vector3,end:THREE.Vector3,index:number){
+  testing(start: THREE.Vector3, end: THREE.Vector3, index: number) {
     //this.world.gravity.set(this.DragBallTHREE.position.x,this.DragBallTHREE.position.y,this.DragBallTHREE.position.z);
     let direction = new THREE.Vector3();
-    direction.subVectors(end,start);
+    direction.subVectors(end, start);
     let totalLength = direction.length();
     direction.normalize();
 
@@ -267,7 +241,7 @@ export class PendulumService {
     //let lastItem = this.bodies.length-1;
     let speed = totalLength / tweentime;
     direction.multiplyScalar(speed);
-    this.bodies[index].velocity.set(direction.x,direction.y,direction.z);
+    this.bodies[index].velocity.set(direction.x, direction.y, direction.z);
   }
 
 }
