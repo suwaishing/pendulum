@@ -13,9 +13,11 @@ export class PendulumService {
   private renderer: THREE.WebGLRenderer;
   private camera: THREE.PerspectiveCamera;
   private scene: THREE.Scene;
+  
   private controls: OrbitControls;
   private dragControl: DragControls;
   private dt = 1 / 45;
+  private loop=true;
   //object
   private bodies: any[] = [];
   private meshes: any[] = [];
@@ -23,10 +25,11 @@ export class PendulumService {
   private lastBallsMesh: any[] = [];
   private physicMaterial: CANNON.Material;
   private isDrag = false;
+  private runResize;
   constructor() { }
 
   createScene(id: string) {
-
+    this.loop=true;
     this.canvas = <HTMLCanvasElement>document.getElementById(id);
 
     this.renderer = new THREE.WebGLRenderer({
@@ -68,11 +71,11 @@ export class PendulumService {
     this.createGround();
 
     //Load model
-    this.addSphereChain(0);
-    this.addSphereChain(-1.5);
-    this.addSphereChain(1.5);
-    this.addSphereChain(-3);
-    this.addSphereChain(3);
+    let penNum = 5;
+    let start = -2;
+    for (let i = 0; i < penNum; i++) {
+      this.addSphereChain(start+i);
+    }
     //this.addRope();
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableZoom = false;
@@ -80,13 +83,9 @@ export class PendulumService {
   }
 
   animate() {
-    window.addEventListener('DOMContentLoaded', () => {
-      this.render();
-    })
-
-    window.addEventListener('resize', () => {
-      this.resize();
-    })
+    this.render();
+    this.runResize=()=>{this.resize();}
+    window.addEventListener('resize',this.runResize);
 
     this.dragControl.addEventListener('dragstart', () => {
       this.controls.enabled = false;
@@ -101,33 +100,50 @@ export class PendulumService {
     });
   }
 
+  deleteEverything(){
+    window.removeEventListener('resize',this.runResize);
+      this.scene=null;
+      this.world=null;
+      this.camera=null;
+      this.renderer=null;
+      this.controls = null;
+      this.dragControl = null;
+      this.loop=false;
+      this.bodies.length=0;
+      this.meshes.length=0;
+      this.balls.length=0;
+      this.lastBallsMesh.length=0;
+  
 
+  }
   render() {
-    requestAnimationFrame(() => {
-      this.render();
-    });
-    this.world.step(this.dt);
-    this.controls.update();
-
-    for (let i = 0; i < this.lastBallsMesh.length; i++) {
-      const lastBall = this.lastBallsMesh[i];
-      let start = this.meshes[lastBall].position;
-      let end = this.balls[i].position;
-      let distance = start.distanceTo(end).toFixed(1);
-      parseFloat(distance);
-      if (this.isDrag && distance > 0.1) {
-        this.testing(start, end, lastBall);
-      } else {
-        this.balls[i].position.copy(this.bodies[lastBall].position);
-
+    if (this.loop) {
+      requestAnimationFrame(() => {
+        this.render();
+      });
+      this.world.step(this.dt);
+      this.controls.update();
+  
+      for (let i = 0; i < this.lastBallsMesh.length; i++) {
+        const lastBall = this.lastBallsMesh[i];
+        let start = this.meshes[lastBall].position;
+        let end = this.balls[i].position;
+        let distance = start.distanceTo(end).toFixed(1);
+        parseFloat(distance);
+        if (this.isDrag && distance > 0.1) {
+          this.testing(start, end, lastBall);
+        } else {
+          this.balls[i].position.copy(this.bodies[lastBall].position);
+  
+        }
       }
+  
+      for (let i = 0; i < this.meshes.length; i++) {
+        this.meshes[i].position.copy(this.bodies[i].position);
+        this.meshes[i].quaternion.copy(this.bodies[i].quaternion);
+      }
+      this.renderer.render(this.scene, this.camera);  
     }
-
-    for (let i = 0; i < this.meshes.length; i++) {
-      this.meshes[i].position.copy(this.bodies[i].position);
-      this.meshes[i].quaternion.copy(this.bodies[i].quaternion);
-    }
-    this.renderer.render(this.scene, this.camera);
   }
 
   resize() {
