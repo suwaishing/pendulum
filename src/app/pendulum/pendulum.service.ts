@@ -37,10 +37,10 @@ export class PendulumService {
       alpha: true,
       antialias: true
     });
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    // this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
+    // this.renderer.setPixelRatio(window.devicePixelRatio);
     //Create scene
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, .1, 1000);
@@ -84,8 +84,8 @@ export class PendulumService {
 
   animate() {
     this.render();
-    this.runResize=()=>{this.resize();}
-    window.addEventListener('resize',this.runResize);
+    // this.runResize=()=>{this.resize();}
+    // window.addEventListener('resize',this.runResize);
 
     this.dragControl.addEventListener('dragstart', () => {
       this.controls.enabled = false;
@@ -101,7 +101,7 @@ export class PendulumService {
   }
 
   deleteEverything(){
-    window.removeEventListener('resize',this.runResize);
+    // window.removeEventListener('resize',this.runResize);
       this.scene=null;
       this.world=null;
       this.camera=null;
@@ -116,14 +116,28 @@ export class PendulumService {
   
 
   }
+
+  resizeRendererToDisplaySize(renderer:THREE.WebGLRenderer) {
+    const canvas = renderer.domElement;
+    const pixelRatio = window.devicePixelRatio;
+    const width  = canvas.clientWidth  * pixelRatio | 0;
+    const height = canvas.clientHeight * pixelRatio | 0;
+    const needResize = canvas.width !== width || canvas.height !== height;
+    if (needResize) {
+      renderer.setSize(width, height, false);
+    }
+    return needResize;
+  }
+
   render() {
     if (this.loop) {
       requestAnimationFrame(() => {
         this.render();
       });
+      //this.controls.update();
+      this.resize();
+      
       this.world.step(this.dt);
-      this.controls.update();
-  
       for (let i = 0; i < this.lastBallsMesh.length; i++) {
         const lastBall = this.lastBallsMesh[i];
         let start = this.meshes[lastBall].position;
@@ -147,9 +161,13 @@ export class PendulumService {
   }
 
   resize() {
-    this.camera.aspect = window.innerWidth / window.innerHeight;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    // this.camera.aspect = window.innerWidth / window.innerHeight;
+    // this.camera.updateProjectionMatrix();
+    // this.renderer.setSize(window.innerWidth, window.innerHeight);
+    if (this.resizeRendererToDisplaySize(this.renderer)) {
+      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.updateProjectionMatrix();
+    }
   }
 
   initCannon() {

@@ -43,10 +43,9 @@ export class CoinService {
       alpha: true,
       antialias: true
     });
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
     //this.renderer.setClearColor("rgb(98, 131, 149)");
     //Create scene
     this.scene = new THREE.Scene();
@@ -118,8 +117,8 @@ export class CoinService {
 
   animate() {
     this.render();
-    this.runResize=()=>{this.resize();}
-    window.addEventListener('resize',this.runResize);
+    // this.runResize=()=>{this.resize();}
+    // window.addEventListener('resize',this.runResize);
 
     this.canvas.addEventListener('mousedown', (event) => {
       this.createCoin(event);
@@ -128,7 +127,7 @@ export class CoinService {
   }
 
   deleteEverything(){
-    window.removeEventListener('resize',this.runResize);
+    // window.removeEventListener('resize',this.runResize);
     this.scene=null;
     this.world=null;
     this.camera=null;
@@ -145,21 +144,25 @@ export class CoinService {
       clearTimeout(this.clearCoin[i]);
     }
     this.clearCoin.length=0;
-    console.log(this.boxObj)
   }
 
-  clearScene( scene:THREE.Scene ) {
-    for (let i = scene.children.length - 1; i >= 0; i--) {
-      const object = scene.children[i];
-        scene.remove(object);
+  resizeRendererToDisplaySize(renderer:THREE.WebGLRenderer) {
+    const canvas = renderer.domElement;
+    const pixelRatio = window.devicePixelRatio;
+    const width  = canvas.clientWidth  * pixelRatio | 0;
+    const height = canvas.clientHeight * pixelRatio | 0;
+    const needResize = canvas.width !== width || canvas.height !== height;
+    if (needResize) {
+      renderer.setSize(width, height, false);
     }
+    return needResize;
   }
   render() {
     if(this.loop){
       requestAnimationFrame(() => {
         this.render();
       });
-      
+      this.resize();
       this.world.step(this.dt);
       // Update positions
 
@@ -175,9 +178,11 @@ export class CoinService {
   }
 
   resize() {
-    this.camera.aspect = window.innerWidth / window.innerHeight;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    if (this.resizeRendererToDisplaySize(this.renderer)) {
+      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.updateProjectionMatrix();
+  
+    }
   }
 
   initCannon() {
@@ -267,8 +272,6 @@ export class CoinService {
         this.boxObj = gltf.scene.children[0];
         this.boxObj.receiveShadow = true;
         this.boxObj.castShadow = true;
-        //thing.rotation.set(0,-Math.PI/2,0)
-        //console.log(thing);
         this.meshes.push(this.boxObj);
         this.scene.add(this.boxObj);
         this.camera.lookAt(this.boxObj.position);
