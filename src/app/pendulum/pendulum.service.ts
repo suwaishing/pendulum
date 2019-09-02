@@ -16,7 +16,7 @@ export class PendulumService {
   
   private controls: OrbitControls;
   private dragControl: DragControls;
-  private dt = 1 / 45;
+  private dt = 1 / 60;
   private loop=true;
   //object
   private bodies: any[] = [];
@@ -79,6 +79,7 @@ export class PendulumService {
     //this.addRope();
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableZoom = false;
+    this.controls.enablePan = false;
     this.dragControl = new DragControls(this.balls, this.camera, this.renderer.domElement);
   }
 
@@ -271,7 +272,7 @@ export class PendulumService {
     let totalLength = direction.length();
     direction.normalize();
 
-    let tweentime = 2.5;
+    let tweentime = 0.5;
     //let lastItem = this.bodies.length-1;
     let speed = totalLength / tweentime;
     direction.multiplyScalar(speed);
