@@ -25,7 +25,6 @@ export class PendulumService {
   private lastBallsMesh: any[] = [];
   private physicMaterial: CANNON.Material;
   private isDrag = false;
-  private runResize;
   constructor() { }
 
   createScene(id: string) {
@@ -38,8 +37,8 @@ export class PendulumService {
       antialias: true
     });
     // this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    // this.renderer.shadowMap.enabled = true;
+    // this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     // this.renderer.setPixelRatio(window.devicePixelRatio);
     //Create scene
     this.scene = new THREE.Scene();
@@ -56,14 +55,14 @@ export class PendulumService {
     light2.position.set(0, 20, 0);
     this.scene.add(light2);
 
-    let light3 = new THREE.PointLight(0xd8fae9, 3, 15, 2);
+    let light3 = new THREE.PointLight(0xd8fae9, 2, 15, 2);
     light3.position.set(0, 5, 0);
-    light3.castShadow = true;
+    // light3.castShadow = true;
     this.scene.add(light3);
 
-    let light4 = new THREE.PointLight(0x8e50a9, 3, 15, 2);
+    let light4 = new THREE.PointLight(0x8e50a9, 2, 15, 2);
     light4.position.set(0, -5, 0);
-    light4.castShadow = true;
+    // light4.castShadow = true;
     this.scene.add(light4);
 
     this.initCannon();
@@ -80,6 +79,7 @@ export class PendulumService {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableZoom = false;
     this.controls.enablePan = false;
+    this.controls.rotateSpeed = 0.5;
     this.dragControl = new DragControls(this.balls, this.camera, this.renderer.domElement);
   }
 
@@ -145,7 +145,7 @@ export class PendulumService {
         let end = this.balls[i].position;
         let distance = start.distanceTo(end).toFixed(1);
         parseFloat(distance);
-        if (this.isDrag && distance > 0.1) {
+        if (this.isDrag && distance > 0.4) {
           this.testing(start, end, lastBall);
         } else {
           this.balls[i].position.copy(this.bodies[lastBall].position);
@@ -189,7 +189,7 @@ export class PendulumService {
     let background = new THREE.BoxGeometry(20, 20, 20);
     let backgroundMat = new THREE.MeshStandardMaterial({ color: 0xfffcf8, roughness: 1, emissive: 0x000000, side: THREE.BackSide });
     let backgroundMesh = new THREE.Mesh(background, backgroundMat);
-    backgroundMesh.receiveShadow = true;
+    // backgroundMesh.receiveShadow = true;
     backgroundMesh.position.set(0, 0, 0);
     backgroundMesh.rotation.set(0, -Math.PI / 2, 0);
     backgroundMesh.position.normalize();
@@ -247,7 +247,7 @@ export class PendulumService {
     let ballGeo = new THREE.SphereGeometry(radius, 20, 20);
     let ballMat = new THREE.MeshPhongMaterial({ color: 0xcccccc });
     let ballMesh = new THREE.Mesh(ballGeo, ballMat);
-    ballMesh.castShadow = true;
+    // ballMesh.castShadow = true;
     // ballMesh.receiveShadow = true;
     this.meshes.push(ballMesh);
     this.scene.add(ballMesh);
