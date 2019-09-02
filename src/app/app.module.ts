@@ -2,24 +2,18 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
-import { CoinComponent } from './coin/coin.component';
-import { PendulumComponent } from './pendulum/pendulum.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { RouterModule } from '@angular/router';
-import { appRoutes } from './routes';
+import { PendulumComponent } from './pen-module/pendulum/pendulum.component';
 import { NormalComponent } from './normal/normal.component';
+import { AppRoutingModule } from './routes.module';
 
 @NgModule({
   declarations: [
     AppComponent,
-    CoinComponent,
-    PendulumComponent,
     NormalComponent
   ],
   imports: [
     BrowserModule,
-    BrowserAnimationsModule,
-    RouterModule.forRoot(appRoutes,{onSameUrlNavigation:'reload'})
+    AppRoutingModule
   ],
   providers: [],
   bootstrap: [AppComponent]

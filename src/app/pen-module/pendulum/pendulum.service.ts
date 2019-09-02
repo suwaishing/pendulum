@@ -248,7 +248,7 @@ export class PendulumService {
     let ballMat = new THREE.MeshPhongMaterial({ color: 0xcccccc });
     let ballMesh = new THREE.Mesh(ballGeo, ballMat);
     ballMesh.castShadow = true;
-    ballMesh.receiveShadow = true;
+    // ballMesh.receiveShadow = true;
     this.meshes.push(ballMesh);
     this.scene.add(ballMesh);
 
