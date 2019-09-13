@@ -5,11 +5,13 @@ import { AppComponent } from './app.component';
 import { PendulumComponent } from './pen-module/pendulum/pendulum.component';
 import { NormalComponent } from './normal/normal.component';
 import { AppRoutingModule } from './routes.module';
+import { NavComponent } from './nav/nav.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    NormalComponent
+    NormalComponent,
+    NavComponent
   ],
   imports: [
     BrowserModule,

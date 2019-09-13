@@ -1,0 +1,29 @@
+.layout-intro{
+    background:  linear-gradient(to top, #afcce4 0%, #7EE0E0 100%);
+    height: 100vh;
+    width: 100%;
+}
+.intro {
+    max-width: 550px;
+    padding-top: 5%;
+    margin: 0 auto;
+    
+    color: #05182A;
+    h1{
+        margin: 0 auto;
+        padding-top: 20%;
+        font-size: 5rem;
+        // color: #05182A;
+    }
+    h2{
+        margin: 0 auto;
+        font-size: 3rem;
+        font-style: italic;
+        // color: #05182A;
+    }
+    p{
+        font-size: 1.2rem;
+        padding: 5% 0;
+    }
+
+}

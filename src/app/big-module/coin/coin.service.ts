@@ -50,57 +50,44 @@ export class CoinService {
     //Create scene
     this.scene = new THREE.Scene();
     //this.scene.background= new THREE.Color( "rgb(98, 131, 149)" );
-    this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, .1, 1000);
+    this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, .1, 10000);
     //this.camera.position.set(8,8,0);
-    this.camera.position.set(0, 7, 10);
+    this.camera.position.set(0, 6, 10);
+    // this.camera.position.set(0, 15, -10);
     this.scene.add(this.camera);
 
     //Create Light
-    let light = new THREE.HemisphereLight( 0xf8bce5,0xc1d7e7,2);
-    //let light = new THREE.AmbientLight( 0xf5bae3,2);
-    light.position.set(0,7,5);
-    this.scene.add(light);
+    let light5 = new THREE.DirectionalLight(0xf5bae3,0.4);
+    // light5.lookAt(new THREE.Vector3(0,7,10));
+    light5.position.set(0,6,0);
+    light5.castShadow = true;
+    light5.shadow.radius=1;
+    this.scene.add(light5);
 
-    // let light2 = new THREE.Light(0xffffff,5);
-    // light2.position.set(10, 7, -10);
-    // light2.castShadow = true;
-    // this.scene.add(light2);
+    let light = new THREE.PointLight(0xbfd5e5,1,20,2);
+    // light.lookAt(new THREE.Vector3(-3,3,0));
+    light.position.set(-3,2,0);
+    // this.scene.add(light);
 
-  
-    var pointLight = new THREE.DirectionalLight(0xfffdd3,2);
-    pointLight.position.set(2,3,8).normalize();
-    this.scene.add(pointLight);
- 
-    // var pointLight2 = new THREE.DirectionalLight(0xfffdd3,.5);
-    // pointLight2.position.set(0,8,-10).normalize();
-    // this.scene.add(pointLight2);
-
-    var light2 = new THREE.DirectionalLight(0xfffdd3,2);
-    light2.position.set(-10,10,2).normalize();
-    this.scene.add(light2);
-
-    let light3 = new THREE.DirectionalLight(0xfdff99,0.3);
-    
-    light3.position.set(0,8,-10);
-    light3.translateY(-1.5);
-    light3.translateZ(1.5);
-    //light3.castShadow = true;
-    this.scene.add(light3);
-
-    // let light4 = new THREE.PointLight(0xfce916, 3);
-    // light4.position.set(1, 2, -1);
+    let light4 = new THREE.PointLight(0xbfd5e5, 0.6);
+    // light.lookAt(new THREE.Vector3(-3,3,0));
+    light4.position.set(0,10,0);
     // this.scene.add(light4);
 
-    // let light5 = new THREE.PointLight(0xc4c4c4, 2);
-    // light5.position.set(7, -8, -2);
-    // this.scene.add(light5);
+    // let light2 = new THREE.HemisphereLight(0xf5bae3,0xbfd5e5,0.5);
+    // light2.position.set(0,10,0);
+    // this.scene.add(light2);
+
+    let light3 = new THREE.DirectionalLight(0xf5bae3, 0.5);
+    light3.position.set(0,-3,10);
+    this.scene.add(light3);
 
     //mouse and raycaster
     this.mouse = new THREE.Vector2();
     this.raycaster = new THREE.Raycaster();
 
-    let background = new THREE.IcosahedronGeometry(15);
-    let backgroundMat = new THREE.MeshStandardMaterial({color: 0xf7a5d1, roughness:1, metalness:0,emissive:0x354164})
+    let background = new THREE.IcosahedronGeometry(20,1);
+    let backgroundMat = new THREE.MeshStandardMaterial({color: 0xf7a5d1, roughness:1, metalness:0,emissive:0x354164,side:THREE.BackSide})
     let backgroundMesh = new THREE.Mesh(background,backgroundMat);
     backgroundMesh.position.set(0,0,0);
     backgroundMesh.rotation.set(0,-Math.PI/2,0);
@@ -113,6 +100,7 @@ export class CoinService {
 
     //Load model
     this.createBox();
+    
   }
 
   animate() {
@@ -178,11 +166,15 @@ export class CoinService {
   }
 
   resize() {
+    const ww = window.innerWidth;
+
     if (this.resizeRendererToDisplaySize(this.renderer)) {
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
   
     }
+
+
   }
 
   initCannon() {
@@ -207,11 +199,11 @@ export class CoinService {
     let floorGeo = new THREE.PlaneGeometry(100, 100, 25, 25);
     floorGeo.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
 
-    let material = new THREE.MeshStandardMaterial();
-    material.color= new THREE.Color(0xBA4859);
+    let material = new THREE.ShadowMaterial({transparent:true,opacity:0.1});
     //material.transparent= true;
 
     let mesh = new THREE.Mesh(floorGeo, material);
+    mesh.receiveShadow =true;
     this.scene.add(mesh);
 
     //Physics
@@ -225,7 +217,7 @@ export class CoinService {
   createBox() {
     //Physics
     let body = new CANNON.Body({ mass: 10, material: this.groundMaterial });
-    //body.position.set(0, 1, 0);
+    body.position.set(0, 0, 0);
     body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
 
     // Use a box shape as child shape
@@ -265,20 +257,24 @@ export class CoinService {
     this.world.addBody(body);
 
     //Graphics
+    let boxMat = new THREE.MeshStandardMaterial({color:0x190b02,roughness:0.4, metalness:0.4,emissive:0x190b00});
     this.loader = new GLTFLoader();
     this.loader.load(
-      'assets/saisen2.glb',
+      'assets/saisen4.glb',
       (gltf) => {
-        this.boxObj = gltf.scene.children[0];
-        this.boxObj.receiveShadow = true;
-        this.boxObj.castShadow = true;
+        this.boxObj = gltf.scene;
+        this.boxObj.children["0"].receiveShadow = true;
+        this.boxObj.children["0"].castShadow = true;
+        this.boxObj.children["0"].children["0"].receiveShadow = true;
+        this.boxObj.children["0"].children["0"].castShadow = true;
+        this.boxObj.children["0"].children["0"].material.copy(boxMat);
         this.meshes.push(this.boxObj);
         this.scene.add(this.boxObj);
         this.camera.lookAt(this.boxObj.position);
+
       //   thing.traverse( function( node ) {
       //     if ( node instanceof THREE.Mesh ) { node.castShadow = true; }
       // } );
-  
 
       }
     )
@@ -294,10 +290,12 @@ export class CoinService {
     // //this.coinBody.position.set(-3, 5, 0);
 
     //Graphics
+    let coinMat = new THREE.MeshStandardMaterial({color:0xcec721,emissive: 0x595000,roughness:0.41,metalness:0.68});
     this.loaderCoin = new GLTFLoader();
     this.loaderCoin.load('assets/coinv3.glb',(gltf)=>{
-      this.coinObj = gltf.scene.children[0];
-      this.coinObj.scale.set(.15,.15,.15);
+      this.coinObj = gltf.scene;
+      this.coinObj.scale.set(.12,.12,.12);
+      this.coinObj.children["0"].material.copy(coinMat);
     })
   }
 

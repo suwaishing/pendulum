@@ -11,7 +11,13 @@
     </div>
 </div> -->
 
-
 <main>
-    <router-outlet></router-outlet>
+    <div class="layout-page">
+        <router-outlet></router-outlet>
+        <div class="layout-btn">
+            <div class="container-btn" [ngClass]="getBtnColor()" >
+                <a [routerLink]="getNextLink()" [innerHtml]="getLinkText()"></a>
+            </div>
+        </div>
+    </div>
 </main>

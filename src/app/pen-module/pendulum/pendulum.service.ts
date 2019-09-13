@@ -15,7 +15,7 @@ export class PendulumService {
   private scene: THREE.Scene;
   
   private controls: OrbitControls;
-  private dragControl: DragControls;
+  private dragControl;
   private dt = 1 / 60;
   private loop=true;
   //object
@@ -50,20 +50,19 @@ export class PendulumService {
 
 
     //Create Light
+    let light = new THREE.PointLight(0xf9690e, 1);
+    light.position.set(0, 10, 0);
+    this.scene.add(light);
 
-    let light2 = new THREE.HemisphereLight(0xafcce4, 0x883ee8, 0.5);
-    light2.position.set(0, 20, 0);
+    let light2 = new THREE.HemisphereLight(0xf9690e, 0xff6347, 0.7);
+    light2.position.set(0, 10, 0);
     this.scene.add(light2);
 
-    let light3 = new THREE.PointLight(0xd8fae9, 2, 15, 2);
-    light3.position.set(0, 5, 0);
-    // light3.castShadow = true;
+    let light3 = new THREE.PointLight(0xff6347,1);
+    light3.position.set(0, -10, 0);
     this.scene.add(light3);
 
-    let light4 = new THREE.PointLight(0x8e50a9, 2, 15, 2);
-    light4.position.set(0, -5, 0);
-    // light4.castShadow = true;
-    this.scene.add(light4);
+ 
 
     this.initCannon();
     //Create Floor
@@ -145,7 +144,7 @@ export class PendulumService {
         let end = this.balls[i].position;
         let distance = start.distanceTo(end).toFixed(1);
         parseFloat(distance);
-        if (this.isDrag && distance > 0.4) {
+        if (this.isDrag && distance > 0.1) {
           this.testing(start, end, lastBall);
         } else {
           this.balls[i].position.copy(this.bodies[lastBall].position);
@@ -187,7 +186,7 @@ export class PendulumService {
   createGround() {
     //let background = new THREE.IcosahedronGeometry(20);
     let background = new THREE.BoxGeometry(20, 20, 20);
-    let backgroundMat = new THREE.MeshStandardMaterial({ color: 0xfffcf8, roughness: 1, emissive: 0x000000, side: THREE.BackSide });
+    let backgroundMat = new THREE.MeshStandardMaterial({ color: 0xc09bef, roughness: 1, emissive: 0x000000, side: THREE.BackSide });
     let backgroundMesh = new THREE.Mesh(background, backgroundMat);
     // backgroundMesh.receiveShadow = true;
     backgroundMesh.position.set(0, 0, 0);
@@ -206,12 +205,12 @@ export class PendulumService {
     let holdShape = new CANNON.Sphere(0.1);
     let holdPoint = new CANNON.Body({ mass: 0 });
     holdPoint.addShape(holdShape, new CANNON.Vec3());
-    holdPoint.position.set(x, 5, 0);
+    holdPoint.position.set(x, 4, 0);
     this.bodies.push(holdPoint);
     this.world.addBody(holdPoint);
 
     let sphereGeo = new THREE.SphereBufferGeometry(size, 8, 8);
-    let material = new THREE.MeshBasicMaterial({color:0xa09999});
+    let material = new THREE.MeshStandardMaterial({color:0x3d59fb});
     let sphereMesh = new THREE.Mesh(sphereGeo, material);
     this.meshes.push(sphereMesh);
     this.scene.add(sphereMesh);
@@ -227,7 +226,7 @@ export class PendulumService {
     this.world.addBody(ropeBody);
 
     let ropeGeo = new THREE.CylinderGeometry(size, size, 4, 8, 8);
-    let material02 = new THREE.MeshBasicMaterial({color:0xa09999});
+    let material02 = new THREE.MeshStandardMaterial({color:0x3d59fb});
     let sphereMesh02 = new THREE.Mesh(ropeGeo, material02);
     this.meshes.push(sphereMesh02);
     this.scene.add(sphereMesh02);
@@ -245,7 +244,7 @@ export class PendulumService {
     this.world.addBody(lastBallCannon);
 
     let ballGeo = new THREE.SphereGeometry(radius, 20, 20);
-    let ballMat = new THREE.MeshPhongMaterial({ color: 0xcccccc });
+    let ballMat = new THREE.MeshStandardMaterial({ color: 0x8092f7, roughness:0.5, metalness:0.6 });
     let ballMesh = new THREE.Mesh(ballGeo, ballMat);
     // ballMesh.castShadow = true;
     // ballMesh.receiveShadow = true;
@@ -272,7 +271,7 @@ export class PendulumService {
     let totalLength = direction.length();
     direction.normalize();
 
-    let tweentime = 0.5;
+    let tweentime = 1;
     //let lastItem = this.bodies.length-1;
     let speed = totalLength / tweentime;
     direction.multiplyScalar(speed);

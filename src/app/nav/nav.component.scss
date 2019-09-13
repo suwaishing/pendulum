@@ -1,0 +1,29 @@
+.nav-layout{
+    display: flex;
+    justify-content: center;
+    position: relative;
+    // align-items: center;
+    z-index: 5;
+    ul{
+        position: absolute;
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 65vw;
+        padding: 0;
+        @media screen and (max-width: 426px) {
+            width: 80vw;
+        }
+    }
+    a{
+        text-decoration: none;
+        font-size: 1.5rem;
+        font-family: monospace;
+        color:#a9a9a9;
+        font-weight: 500;
+        @media screen and (max-width: 426px) {
+            font-size: 1.2rem;
+        }
+    }
+}

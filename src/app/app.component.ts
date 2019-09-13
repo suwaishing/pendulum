@@ -1,7 +1,8 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, OnChanges } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, OnChanges, OnInit } from '@angular/core';
 import {Draggable} from "gsap/Draggable";
 import {TweenLite} from "gsap/TweenLite";
-import { RouterOutlet, OutletContext, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
+import { RouterOutlet, Router, NavigationEnd, ActivatedRoute,Event } from '@angular/router';
 import { fader, slideInAnimation, inOut } from './route-animation';
 import { trigger, transition, style, group, query, animate } from '@angular/animations';
 @Component({
@@ -31,18 +32,64 @@ import { trigger, transition, style, group, query, animate } from '@angular/anim
   //   ])
   // ]
 })
-export class AppComponent implements OnChanges {
+export class AppComponent implements OnInit {
   title = 'saisen';
-  @ViewChild('dragPoint') dragPoint: ElementRef;
-  @ViewChild('dragArea') dragArea: ElementRef;
-  //@ViewChild('dragVisual') dragVisual: ElementRef<HTMLCanvasElement>;
-  private ctx: CanvasRenderingContext2D;
-  constructor(private router: Router){
-    
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute
+  ){ }
+  private currentLink:string;
+  private isNavigate=false;
+  ngOnInit(){
+    this.getCurrentLink();
+    this.isNavigate=true;
   }
-  ngOnChanges(){
-    //this.ctx = this.dragVisual.nativeElement.getContext('2d');
-    this.router.onSameUrlNavigation = 'reload';
+  getClasses(){
+    this.isNavigate;
+
+  }
+  getBtnColor(){
+    switch (this.currentLink) {
+      case '/normal':
+        return 'btn-purple';
+      case '/pendulum':
+        return 'btn-blue';
+      case '/coin':
+        return 'btn-red'; 
+    }
+  }
+  getBtnAnim(event){
+    event.target.classList.remove('btn-anim');
+    setTimeout(() => {
+      event.target.classList.add('btn-anim');
+    }, 100);
+  }
+  getNextLink(){
+    switch (this.currentLink) {
+      case '/normal':
+        return '/coin';
+      case '/coin':
+        return '/pendulum';
+      case '/pendulum':
+        return '/normal'; 
+    }
+  }
+  getLinkText(){
+    switch (this.currentLink) {
+      case '/normal':
+        return 'Start';
+      case '/coin':
+        return 'Next';
+      case '/pendulum':
+        return 'Restart'; 
+    }
+  }
+  getCurrentLink(){
+    this.router.events.subscribe((event)=>{
+      if(event instanceof NavigationEnd){
+        this.currentLink = event.url;
+      }
+    })
   }
   // ngAfterViewInit(){
   //   Draggable.create(this.dragPoint.nativeElement,{
