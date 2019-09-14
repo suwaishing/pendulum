@@ -40,22 +40,29 @@ export class AppComponent implements OnInit {
   ){ }
   private currentLink:string;
   private isNavigate=false;
+  linkText: string;
+  btnColor: string;
+  nextLink: string;
   ngOnInit(){
     this.getCurrentLink();
     this.isNavigate=true;
+
+
   }
   getClasses(){
     this.isNavigate;
 
   }
-  getBtnColor(){
-    switch (this.currentLink) {
+  getBtnColor(_currentLink:string){
+    switch (_currentLink) {
       case '/normal':
         return 'btn-purple';
       case '/pendulum':
         return 'btn-blue';
       case '/coin':
-        return 'btn-red'; 
+        return 'btn-red';
+      default:
+        return 'btn-purple';
     }
   }
   getBtnAnim(event){
@@ -64,30 +71,38 @@ export class AppComponent implements OnInit {
       event.target.classList.add('btn-anim');
     }, 100);
   }
-  getNextLink(){
-    switch (this.currentLink) {
+  getNextLink(_currentLink:string){
+    switch (_currentLink) {
       case '/normal':
         return '/coin';
       case '/coin':
         return '/pendulum';
       case '/pendulum':
-        return '/normal'; 
+        return '/normal';
+      default:
+        return '/coin';
     }
   }
-  getLinkText(){
-    switch (this.currentLink) {
+  getLinkText(_currentLink:string){
+    switch (_currentLink) {
       case '/normal':
         return 'Start';
       case '/coin':
         return 'Next';
       case '/pendulum':
-        return 'Restart'; 
+        return 'Restart';
+      default:
+        return 'Start';
     }
   }
   getCurrentLink(){
     this.router.events.subscribe((event)=>{
       if(event instanceof NavigationEnd){
+        
         this.currentLink = event.url;
+        this.linkText=this.getLinkText(this.currentLink);
+        this.btnColor=this.getBtnColor(this.currentLink);
+        this.nextLink=this.getNextLink(this.currentLink);
       }
     })
   }
