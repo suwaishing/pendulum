@@ -1,20 +1,3 @@
-.dragArea{
-    position: relative;
-    width: 400px;
-    height: 100px;
-    margin: 20px auto;
-}
-
-.dragPoint{
-    position: absolute;
-    width: 45px;
-    height: 45px;
-    top:10px;
-    left: 5px;
-    background-color: #00ff00;
-    border-radius: 50%;
-    cursor: pointer;
-}
 .nav-layout{
     display: flex;
     justify-content: center;
@@ -22,12 +5,26 @@
 }
 .layout-page{
     position: relative;
+    // @media screen and (orientation:portrait) {
+    //     // CSS applied when the device is in portrait mode
+    //     display: none;
+    // }
+    
+    // @media screen and (orientation:landscape) {
+    //     // CSS applied when the device is in landscape mode
+    //     display: block;
+    // }
+
 }
 .layout-btn{
     position: absolute;
     left: 50%;
-    top: 75%;
-    margin: -37.5px 0 0 -90px;
+    top: 80%;
+    // margin: -37.5px 0 0 -90px;
+    transform: translate(-50%,-20%);
+    @media screen and (orientation:landscape) and (max-width: 850px) {
+        // top: 90%;
+    }
 }
 
 .container-btn{
@@ -58,6 +55,7 @@
 }
 .btn-anim{
     animation: btn-in 1 .4s linear backwards;
+
 }
 .btn-red{
     background: rgb(247, 68, 48);
@@ -76,6 +74,33 @@
     a{
         background: rgb(132, 202, 221);
     }
+}
+
+.mobile{
+    display: block;
+    position: absolute;
+    z-index: 5;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    opacity: 0.9;
+    top: 0;
+    left: 0;
+
+    p{
+        position: absolute;
+        color: #ffffff;
+        font-size: 2rem;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-20%);
+        margin: 0;
+        width: 90%;
+    }
+    @media (orientation:landscape) {
+        display: none;
+    }
+
 }
 @keyframes btn-in{
     0% {

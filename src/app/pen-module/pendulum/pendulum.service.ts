@@ -50,7 +50,7 @@ export class PendulumService {
 
 
     //Create Light
-    let light = new THREE.PointLight(0xf9690e,1,15,2);
+    let light = new THREE.PointLight(0xf48642,5,20,2);
     light.position.set(0, 10, 0);
     this.scene.add(light);
 
@@ -58,7 +58,7 @@ export class PendulumService {
     light2.position.set(0, 10, 0);
     this.scene.add(light2);
 
-    let light3 = new THREE.PointLight(0xff6347,1,15,2);
+    let light3 = new THREE.PointLight(0xf97c66,5,20,2);
     light3.position.set(0, -10, 0);
     this.scene.add(light3);
 

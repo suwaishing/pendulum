@@ -39,18 +39,16 @@ export class AppComponent implements OnInit {
     private route: ActivatedRoute
   ){ }
   private currentLink:string;
-  private isNavigate=false;
+  private isLandscape=false;
   linkText: string;
   btnColor: string;
   nextLink: string;
   ngOnInit(){
     this.getCurrentLink();
-    this.isNavigate=true;
 
 
   }
   getClasses(){
-    this.isNavigate;
 
   }
   getBtnColor(_currentLink:string){

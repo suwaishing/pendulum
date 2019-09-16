@@ -14,6 +14,9 @@
         padding-top: 20%;
         font-size: 5rem;
         // color: #05182A;
+        @media screen and (orientation:landscape) and (max-width: 850px) {
+            padding-top:0;
+        }
     }
     h2{
         margin: 0 auto;
@@ -21,9 +24,16 @@
         font-style: italic;
         // color: #05182A;
     }
+    div{
+        padding: 20px 0;
+    }
     p{
-        font-size: 1.2rem;
-        padding: 5% 0;
+        font-size: 1.5rem;
+        margin: 0;
+        line-height: 2rem;
+        @media screen and (orientation:landscape) and (max-width: 850px) {
+            font-size: 1.2rem;
+        }
     }
 
 }
