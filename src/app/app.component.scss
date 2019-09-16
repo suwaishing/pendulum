@@ -23,7 +23,7 @@
     // margin: -37.5px 0 0 -90px;
     transform: translate(-50%,-20%);
     @media screen and (orientation:landscape) and (max-width: 850px) {
-        // top: 90%;
+        top: 85%;
     }
 }
 
@@ -34,6 +34,13 @@
     cursor: pointer;
     width: 180px;
     height: 50px;
+    @media screen and (orientation:landscape) and (max-width: 850px) {
+        width: 120px;
+        height: 35px;
+        a{
+            font-size: 1.5rem !important;
+        }
+    }
     a{
         text-decoration: none;
         color: #05182A;

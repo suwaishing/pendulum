@@ -7,8 +7,10 @@
     max-width: 550px;
     padding-top: 5%;
     margin: 0 auto;
-    
     color: #05182A;
+    @media screen and (orientation:landscape) and (max-width: 850px) {
+        padding-top:15px;
+    }
     h1{
         margin: 0 auto;
         padding-top: 20%;
@@ -16,6 +18,7 @@
         // color: #05182A;
         @media screen and (orientation:landscape) and (max-width: 850px) {
             padding-top:0;
+            font-size: 4rem;
         }
     }
     h2{
@@ -23,6 +26,9 @@
         font-size: 3rem;
         font-style: italic;
         // color: #05182A;
+        @media screen and (orientation:landscape) and (max-width: 850px) {
+            font-size: 2rem;
+        }
     }
     div{
         padding: 20px 0;
@@ -33,6 +39,7 @@
         line-height: 2rem;
         @media screen and (orientation:landscape) and (max-width: 850px) {
             font-size: 1.2rem;
+            line-height: 1.5rem;
         }
     }
 
