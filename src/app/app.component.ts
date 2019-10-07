@@ -1,14 +1,27 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, OnChanges, OnInit } from '@angular/core';
-import {Draggable} from "gsap/Draggable";
-import {TweenLite} from "gsap/TweenLite";
-import { filter } from 'rxjs/operators';
-import { RouterOutlet, Router, NavigationEnd, ActivatedRoute,Event } from '@angular/router';
-import { fader, slideInAnimation, inOut } from './route-animation';
-import { trigger, transition, style, group, query, animate } from '@angular/animations';
+import {
+  Component,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+  OnInit
+} from "@angular/core";
+import { Draggable } from "gsap/Draggable";
+import { TweenLite } from "gsap/TweenLite";
+import { filter } from "rxjs/operators";
+import { TweenMax, Power2 } from "gsap/TweenMax";
+import {
+  RouterOutlet,
+  Router,
+  NavigationEnd,
+  ActivatedRoute,
+  Event
+} from "@angular/router";
+import { slideInAnimation, btnAnimations } from "./route-animation";
+
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+  selector: "app-root",
+  templateUrl: "./app.component.html",
+  styleUrls: ["./app.component.scss"],
   // animations: [
   //   trigger('slideInOut', [
   //     transition('* => *, :enter', [
@@ -31,79 +44,72 @@ import { trigger, transition, style, group, query, animate } from '@angular/anim
   //     ])
   //   ])
   // ]
+  animations: [slideInAnimation, btnAnimations]
 })
 export class AppComponent implements OnInit {
-  title = 'saisen';
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute
-  ){ }
-  private currentLink:string;
-  private isLandscape=false;
+  title = "saisen";
+
+  private currentLink: string;
+  private isLandscape = false;
   linkText: string;
   btnColor: string;
   nextLink: string;
-  ngOnInit(){
+  private button;
+  constructor(private router: Router, private eleRef: ElementRef) {}
+  ngOnInit() {
     this.getCurrentLink();
-
-
   }
-  getClasses(){
-
-  }
-  getBtnColor(_currentLink:string){
+  getClasses() {}
+  getBtnColor(_currentLink: string) {
     switch (_currentLink) {
-      case '/normal':
-        return 'btn-purple';
-      case '/pendulum':
-        return 'btn-blue';
-      case '/coin':
-        return 'btn-red';
+      case "/normal":
       default:
-        return 'btn-purple';
+        return "btn-purple";
+      case "/pendulum":
+        return "btn-blue";
+      case "/coin":
+        return "btn-red";
     }
   }
-  getBtnAnim(event){
-    event.target.classList.remove('btn-anim');
-    setTimeout(() => {
-      event.target.classList.add('btn-anim');
-    }, 100);
+  getBtnAnim(event) {
+    let target = event.target.classList
+      .remove("btn-anim")
+      .then(event.target.classList.add("btn-anim"));
   }
-  getNextLink(_currentLink:string){
+  getNextLink(_currentLink: string) {
     switch (_currentLink) {
-      case '/normal':
-        return '/coin';
-      case '/coin':
-        return '/pendulum';
-      case '/pendulum':
-        return '/normal';
+      case "/normal":
       default:
-        return '/coin';
+        return "/coin";
+      case "/coin":
+        return "/pendulum";
+      case "/pendulum":
+        return "/normal";
     }
   }
-  getLinkText(_currentLink:string){
+  getLinkText(_currentLink: string) {
     switch (_currentLink) {
-      case '/normal':
-        return 'Start';
-      case '/coin':
-        return 'Next';
-      case '/pendulum':
-        return 'Restart';
+      case "/normal":
       default:
-        return 'Start';
+        return "Start";
+      case "/coin":
+        return "Next";
+      case "/pendulum":
+        return "Restart";
     }
   }
-  getCurrentLink(){
-    this.router.events.subscribe((event)=>{
-      if(event instanceof NavigationEnd){
-        
+  getCurrentLink() {
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
         this.currentLink = event.url;
-        this.linkText=this.getLinkText(this.currentLink);
-        this.btnColor=this.getBtnColor(this.currentLink);
-        this.nextLink=this.getNextLink(this.currentLink);
+        this.linkText = this.getLinkText(this.currentLink);
+        this.btnColor = this.getBtnColor(this.currentLink);
+        this.nextLink = this.getNextLink(this.currentLink);
+        // this.getBtnAnim(event);
       }
-    })
+    });
   }
+  aniBtn() {}
   // ngAfterViewInit(){
   //   Draggable.create(this.dragPoint.nativeElement,{
   //     bounds:this.dragArea.nativeElement,
@@ -117,7 +123,7 @@ export class AppComponent implements OnInit {
   //     let moveTo = new TweenLite(this.target,0.7,{x:snapTo});
   //   }
   // }
-  getState(outlet: RouterOutlet){
-    return outlet.activatedRouteData.animation;
+  prepareRoute(outlet: RouterOutlet) {
+    return outlet && outlet.activatedRouteData;
   }
 }

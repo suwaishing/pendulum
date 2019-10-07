@@ -12,15 +12,15 @@
 </div> -->
 
 <main>
-    <div class="layout-page">
-        <router-outlet></router-outlet>
-        <div class="layout-btn">
-            <div class="container-btn" [ngClass]="btnColor" >
-                <a [routerLink]="nextLink">{{linkText}}</a>
-            </div>
-        </div>
+  <div class="layout-page" [@routeAnimations]="prepareRoute(outlet)">
+    <router-outlet #outlet="outlet"></router-outlet>
+    <div class="layout-btn">
+      <div class="container-btn" [ngClass]="btnColor" @btnAnimations>
+        <a [routerLink]="nextLink">{{ linkText }}</a>
+      </div>
     </div>
-    <div class="mobile">
-        <p>Please rotate your mobile device</p>
-    </div>
+  </div>
+  <div class="mobile">
+    <p>Please rotate your mobile device</p>
+  </div>
 </main>
