@@ -15,7 +15,7 @@
   <div class="layout-page" [@routeAnimations]="prepareRoute(outlet)">
     <router-outlet #outlet="outlet"></router-outlet>
     <div class="layout-btn">
-      <div class="container-btn" [ngClass]="btnColor" @btnAnimations>
+      <div class="container-btn" [ngClass]="btnColor" #button>
         <a [routerLink]="nextLink">{{ linkText }}</a>
       </div>
     </div>

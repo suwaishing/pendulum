@@ -55,7 +55,7 @@ export const slideInAnimation = trigger("routeAnimations", [
         ":leave",
         [
           animate(
-            "800ms 100ms cubic-bezier(.37,.55,.39,.93)",
+            "1s 500ms cubic-bezier(.37,.55,.39,.93)",
             style({ left: "100%" })
           )
         ],
@@ -66,8 +66,9 @@ export const slideInAnimation = trigger("routeAnimations", [
       query(
         ":enter",
         [
+          // style({ height: "5vh" }),
           animate(
-            "800ms 100ms cubic-bezier(.37,.55,.39,.93)",
+            "1s 500ms cubic-bezier(.37,.55,.39,.93)",
             style({ left: "0%" })
           )
         ],
