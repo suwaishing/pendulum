@@ -1,29 +1,68 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+  Renderer2
+} from "@angular/core";
 import { PendulumService } from "./pendulum.service";
-import { Router } from "@angular/router";
-
+// import * as gs from "gsap";
+import { TweenLite } from "gsap/TweenLite";
+import { Power2 } from "gsap/EasePack";
 @Component({
   selector: "app-pendulum",
   templateUrl: "./pendulum.component.html",
   styleUrls: ["./pendulum.component.scss"]
 })
-export class PendulumComponent implements OnInit, OnDestroy {
+export class PendulumComponent implements OnInit, AfterViewInit {
   private penId = "theCanvas";
-  constructor(private penServ: PendulumService, private router: Router) {}
+  @ViewChild("holdBtn")
+  private holdBtn: ElementRef;
+  constructor(private penServ: PendulumService, private renderer: Renderer2) {}
 
   ngOnInit() {
     this.penServ.createScene(this.penId);
+    this.penServ.disableScene2();
     this.penServ.runScene1();
+    this.penServ.firstInitCoinAndBox();
     this.penServ.animate();
     // this.router.onSameUrlNavigation='reload';
   }
-  initScene(_id: string, cb) {
-    this.penServ.createScene.apply(_id);
-    cb();
+  ngAfterViewInit() {
+    //Animate button
+    const holdTrigger = this.holdBtn.nativeElement;
+
+    const spinner = ".spinner";
+    TweenLite.fromTo(
+      ".hold_trigger",
+      1,
+      { scale: 0 },
+      { scale: 1, ease: Power2.easeOut }
+    ).delay(3);
+    TweenLite.set(spinner, { strokeDashoffset: 720 });
+    const tween = TweenLite.to(spinner, 0.72, {
+      strokeDashoffset: 0,
+      paused: true,
+      onComplete: () => {
+        this.switchScene();
+      }
+    });
+    this.renderer.listen(holdTrigger, "mousedown", () => {
+      tween.play();
+    });
+    this.renderer.listen(holdTrigger, "touchstart", () => {
+      tween.play();
+    });
+
+    this.renderer.listen(holdTrigger, "mouseup", () => {
+      tween.reverse();
+    });
+    this.renderer.listen(holdTrigger, "touchend", () => {
+      tween.reverse();
+    });
   }
   switchScene() {
     this.penServ.switchScene();
   }
-
-  ngOnDestroy() {}
 }
