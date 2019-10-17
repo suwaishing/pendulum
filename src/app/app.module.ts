@@ -8,8 +8,8 @@ import { AppRoutingModule } from "./routes.module";
 
 @NgModule({
   declarations: [
-    AppComponent
-    // NormalComponent,
+    AppComponent,
+    NormalComponent
     // NavComponent
   ],
   imports: [BrowserModule, AppRoutingModule],
