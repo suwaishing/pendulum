@@ -1,100 +1,86 @@
 import {
-    trigger,
-    transition,
-    style,
-    query,
-    group,
-    animateChild,
-    animate,
-    keyframes
-} from '@angular/animations';
+  trigger,
+  transition,
+  style,
+  query,
+  group,
+  animateChild,
+  animate,
+  keyframes,
+  sequence
+} from "@angular/animations";
 
-export const fader = trigger('routeAnimations', [
-    transition('* <=> *', [
-        query(':enter, :leave', [
-            style({
-                position: 'absolute',
-                left: 0,
-                width: '100%',
-                opacity: 0,
-                transform: 'scale(0) translateY(100%)',
-            })
-        ]),
-        query(':enter', [
-            animate('600ms ease',
-                style({ opacity:1,transform:'scale(1) translateY(0)'})
-            )
+export const btnAnimations = trigger("btnAnimations", [
+  transition("* <=> *", [
+    sequence([
+      style({ opacity: 0 }),
+      animate(
+        "500ms",
+        keyframes([
+          style({ opacity: 0, transform: "scale(0)", offset: 0 }),
+          style({ opacity: 0.7, transform: "scale(1.1)", offset: 0.5 }),
+          style({ opacity: 1, transform: "scale(0.89)", offset: 0.8 }),
+          style({ opacity: 1, transform: "scale(1)", offset: 1 })
         ])
+      )
     ])
-])
-export const inOut = trigger('slideInOut', [
-    transition('* => *, :enter', [
-      query(':enter, :leave', style({ position: 'absolute', width: '100%' }), { optional: true }),
-      query(':enter', style({ transform: 'translateX(-100vw)' }), { optional: true }),
-      query(':leave', style({ transform: 'translateX(0vw)' }), { optional: true }),
+  ])
+]);
 
-      group([
-        query(':leave', [
-          animate('500ms ease-in-out', style({
-            transform: 'translateX(100vw)'
-          }))
-        ], { optional: true }),
-        query(':enter', [
-          animate('500ms ease-in-out', style({
-            transform: 'translateX(0)'
-          }))
-        ], { optional: true })
-      ])
-    ])
-])
-
-export const slideInAnimation = trigger('routeAnimations', [
-    transition('* <=> *', [
-      style({ position: 'relative' }),
-      query(':enter, :leave', [
+export const slideInAnimation = trigger("routeAnimations", [
+  transition("* <=> *", [
+    style({ position: "relative" }),
+    query(
+      ":enter, :leave",
+      [
         style({
-          position: 'absolute',
+          position: "absolute",
           top: 0,
           left: 0,
-          width: '100%'
+          width: "100%"
         })
-      ]),
-      query(':enter', [
-        style({ left: '-100%'})
-      ]),
-      query(':leave', animateChild()),
-      group([
-        query(':leave', [
-          animate('300ms ease-out', style({ left: '100%'}))
-        ]),
-        query(':enter', [
-          animate('300ms ease-out', style({ left: '0%'}))
-        ])
-      ]),
-      query(':enter', animateChild()),
+      ],
+      {
+        optional: true
+      }
+    ),
+    query(":enter", [style({ left: "-100%" })], {
+      optional: true
+    }),
+    query(":leave", animateChild(), {
+      optional: true
+    }),
+    group([
+      query(
+        ":leave",
+        [
+          animate(
+            "1s 500ms cubic-bezier(.37,.55,.39,.93)",
+            style({ left: "100%" })
+          )
+        ],
+        {
+          optional: true
+        }
+      ),
+      query(
+        ":enter",
+        [
+          // style({ height: "5vh" }),
+          animate(
+            "1s 500ms cubic-bezier(.37,.55,.39,.93)",
+            style({ left: "0%" })
+          )
+        ],
+        {
+          optional: true
+        }
+      ),
+      query("@btnAnimations", animateChild(), { optional: true })
     ]),
-    transition('* <=> FilterPage', [
-      style({ position: 'relative' }),
-      query(':enter, :leave', [
-        style({
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%'
-        })
-      ]),
-      query(':enter', [
-        style({ left: '-100%'})
-      ]),
-      query(':leave', animateChild()),
-      group([
-        query(':leave', [
-          animate('200ms ease-out', style({ left: '100%'}))
-        ]),
-        query(':enter', [
-          animate('300ms ease-out', style({ left: '0%'}))
-        ])
-      ]),
-      query(':enter', animateChild()),
-    ])
-  ]);
+    query(":enter", animateChild(), {
+      optional: true
+    }),
+    query("@btnAnimations", animateChild(), { optional: true })
+  ])
+]);
