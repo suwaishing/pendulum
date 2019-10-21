@@ -15,7 +15,9 @@ export class PendulumService {
   private renderer: THREE.WebGLRenderer;
   private camera: THREE.PerspectiveCamera;
   private scene: THREE.Scene;
-  private dt = 1 / 60;
+  private times = [];
+  private fps: number;
+  private now: number;
   private bodies: any[] = [];
   private meshes: any[] = [];
   private physicMaterial: CANNON.Material;
@@ -188,8 +190,8 @@ export class PendulumService {
       castShadow: false
     };
     const BackGround = {
-      color: 0xd477a9,
-      emissive: 0x223d8e
+      color: 0x823c61,
+      emissive: 0x3e389d
     };
     let light = new THREE.PointLight(
       Light1.color,
@@ -527,6 +529,14 @@ export class PendulumService {
   }
 
   render() {
+    this.now = performance.now();
+
+    if (this.times.length > 0 && this.times[0] <= this.now - 1000) {
+      this.times.shift();
+    }
+
+    this.times.push(this.now);
+    this.fps = 1 / this.times.length;
     if (!this.RESOURCE_LOADED) {
       requestAnimationFrame(() => {
         this.render();
@@ -547,7 +557,7 @@ export class PendulumService {
       this.render();
     });
     this.resize();
-    this.world.step(this.dt);
+    this.world.step(this.fps);
 
     for (let i = 0; i < this.meshes.length; i++) {
       this.meshes[i].position.copy(this.bodies[i].position);
