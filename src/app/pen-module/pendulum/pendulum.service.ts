@@ -2,6 +2,7 @@ import * as THREE from "three";
 import * as CANNON from "cannon";
 import * as OrbitControls from "three-orbitcontrols";
 import * as gs from "gsap";
+import * as dat from "dat.gui";
 import GLTFLoader from "three-gltf-loader";
 import { Injectable } from "@angular/core";
 
@@ -22,7 +23,8 @@ export class PendulumService {
   RESOURCE_LOADED = false;
   private clearScene: any[] = [];
   private clearWorld: any[] = [];
-
+  private gui: dat.GUI;
+  private gui2: dat.GUI;
   //pendulum parameters
   private controls: OrbitControls;
   private dragControl;
@@ -36,9 +38,12 @@ export class PendulumService {
   private raycaster: THREE.Raycaster;
   public loader: GLTFLoader;
   private loaderCoin: GLTFLoader;
-  private boxObj: THREE.Object3D;
-  public coinObj: THREE.Object3D;
+  private boxObj;
+  private cloneBox;
+  public coinObj: THREE.Scene;
   private groundMaterial: CANNON.Material;
+  private coinMat: THREE.MeshStandardMaterial;
+  private boxMat: THREE.MeshStandardMaterial;
 
   //transition parameter
   private isScene1 = true;
@@ -103,6 +108,8 @@ export class PendulumService {
       0.1,
       1000
     );
+    //Init GUI
+    this.gui = new dat.GUI();
 
     this.scene.add(this.camera);
     // Init loading Scene
@@ -153,41 +160,80 @@ export class PendulumService {
   initScene1() {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
     //Create Light
-    let light = new THREE.PointLight(0xbfd5e5, 1, 20, 2);
-    light.position.set(-3, 2, 0);
+    const Light1 = {
+      color: 0xbfd5e5,
+      intensity: 5,
+      distance: 22,
+      decay: 1,
+      x: 0,
+      y: -1,
+      z: 18
+    };
+    const Light2 = {
+      color: 0xebebeb,
+      intensity: 2.28,
+      x: 0,
+      y: -8.8,
+      z: -5,
+      castShadow: true
+    };
+    const Light3 = {
+      color: 0xf5bae3,
+      intensity: 0.85,
+      x: 0,
+      y: -4,
+      z: 5,
+      castShadow: false
+    };
+    const BackGround = {
+      color: 0xd477a9,
+      emissive: 0x223d8e
+    };
+    let light = new THREE.PointLight(
+      Light1.color,
+      Light1.intensity,
+      Light1.distance,
+      Light1.decay
+    );
+    light.position.set(Light1.x, Light1.y, Light1.z);
     this.clearScene.push(light.uuid);
     this.scene.add(light);
+    this.guiPointLight(this.gui, "PointLight", Light1, light);
 
-    let light2 = new THREE.DirectionalLight(0xf5bae3, 0.4);
-    light2.position.set(0, 6, 0);
-    light2.castShadow = true;
+    let light2 = new THREE.DirectionalLight(Light2.color, Light2.intensity);
+    light2.position.set(Light2.x, Light2.y, Light2.z);
+    light2.castShadow = Light2.castShadow;
     light2.shadow.radius = 1;
     this.clearScene.push(light2.uuid);
     this.scene.add(light2);
+    this.guiDirectLight(this.gui, "Directionlight 1", Light2, light2);
 
-    let light3 = new THREE.DirectionalLight(0xf5bae3, 0.5);
-    light3.position.set(0, -3, 10);
+    let light3 = new THREE.DirectionalLight(Light3.color, Light3.intensity);
+    light3.position.set(Light3.x, Light3.y, Light3.z);
     this.clearScene.push(light3.uuid);
     this.scene.add(light3);
+    this.guiDirectLight(this.gui, "Directionlight 2", Light3, light3);
 
+    //Camera
     this.camera.position.set(0, 6, 12);
     //mouse and raycaster
     this.mouse = new THREE.Vector2();
     this.raycaster = new THREE.Raycaster();
 
-    let background = new THREE.IcosahedronGeometry(20, 1);
-    let backgroundMat = new THREE.MeshStandardMaterial({
-      color: 0xf7a5d1,
-      roughness: 1,
-      metalness: 0,
-      emissive: 0x354164,
+    let background = new THREE.IcosahedronBufferGeometry(20, 1);
+    let backgroundMat = new THREE.MeshLambertMaterial({
+      color: BackGround.color,
+      emissive: BackGround.emissive,
       side: THREE.BackSide
     });
+
     let backgroundMesh = new THREE.Mesh(background, backgroundMat);
     backgroundMesh.position.set(0, 0, 0);
     backgroundMesh.rotation.set(0, -Math.PI / 2, 0);
     backgroundMesh.position.normalize();
+    this.guiLambertMat(this.gui, "Background", BackGround, backgroundMat);
     this.clearScene.push(backgroundMesh.uuid);
     this.scene.add(backgroundMesh);
 
@@ -196,19 +242,62 @@ export class PendulumService {
   }
 
   initScene2() {
+    const Light1 = {
+      color: 0xf48642,
+      intensity: 5,
+      distance: 20,
+      decay: 2,
+      x: 0,
+      y: 10,
+      z: 0
+    };
+    const Light2 = {
+      color: 0xf97c66,
+      intensity: 5,
+      distance: 20,
+      decay: 2,
+      x: 0,
+      y: -10,
+      z: 0
+    };
+    const Light3 = {
+      skyColor: 0xf9690e,
+      groundColor: 0xff6347,
+      intensity: 0.7,
+      x: 0,
+      y: 10,
+      z: 0
+    };
     //Create Light
-    let light = new THREE.PointLight(0xf48642, 5, 20, 2);
-    light.position.set(0, 10, 0);
+    let light = new THREE.PointLight(
+      Light1.color,
+      Light1.intensity,
+      Light1.distance,
+      Light1.decay
+    );
+    light.position.set(Light1.x, Light1.y, Light1.z);
+    this.guiPointLight(this.gui, "PointLight 1", Light1, light);
     this.clearScene.push(light.uuid);
     this.scene.add(light);
 
-    let light2 = new THREE.HemisphereLight(0xf9690e, 0xff6347, 0.7);
-    light2.position.set(0, 10, 0);
+    let light2 = new THREE.PointLight(
+      Light2.color,
+      Light2.intensity,
+      Light2.distance,
+      Light2.decay
+    );
+    light2.position.set(Light2.x, Light2.y, Light2.z);
+    this.guiPointLight(this.gui, "PointLight 2", Light2, light2);
     this.clearScene.push(light2.uuid);
     this.scene.add(light2);
 
-    let light3 = new THREE.PointLight(0xf97c66, 5, 20, 2);
-    light3.position.set(0, -10, 0);
+    let light3 = new THREE.HemisphereLight(
+      Light3.skyColor,
+      Light3.groundColor,
+      Light3.intensity
+    );
+    light3.position.set(Light3.x, Light3.y, Light3.z);
+    this.guiHemiLight(this.gui, "HemisphereLight", Light3, light3);
     this.clearScene.push(light3.uuid);
     this.scene.add(light3);
 
@@ -218,8 +307,31 @@ export class PendulumService {
     //Load model
     let penNum = 5;
     let start = -2;
+    const RopeMat = {
+      color: 0x3d59fb,
+      emissive: 0x000
+    };
+    const BallMat = {
+      color: 0x8092f7,
+      emissive: 0x000,
+      roughness: 0.5,
+      metalness: 0.6
+    };
+    let ropeMat = new THREE.MeshLambertMaterial({
+      color: RopeMat.color,
+      emissive: RopeMat.emissive
+    });
+    let ballMat = new THREE.MeshStandardMaterial({
+      color: BallMat.color,
+      emissive: BallMat.emissive,
+      roughness: BallMat.roughness,
+      metalness: BallMat.metalness
+    });
+    this.guiLambertMat(this.gui, "Rope", RopeMat, ropeMat);
+    this.guiMaterial(this.gui, "Ball", BallMat, ballMat);
+
     for (let i = 0; i < penNum; i++) {
-      this.addSphereChain(start + i);
+      this.addSphereChain(start + i, ropeMat, ballMat);
     }
 
     this.controls.enabled = true;
@@ -245,8 +357,10 @@ export class PendulumService {
         });
       }
     });
+
     setTimeout(() => {
       this.clearSceneWorld();
+      this.clearGUI();
       if (this.isScene1) {
         this.disableScene2();
         this.runScene1();
@@ -274,54 +388,101 @@ export class PendulumService {
     this.clearScene.length = 0;
   }
 
-  runScene1() {
+  clearGUI() {
+    let items = Object.keys(this.gui.__folders);
+    items.map(key => {
+      let value = this.gui.__folders[key];
+      this.gui.removeFolder(value);
+    });
+  }
+  async runScene1() {
     this.isScene1 = true;
     this.initScene1();
-    if (this.RESOURCE_LOADED) {
+
+    if (this.RESOURCE_LOADED === false) {
+      await this.firstInitCoinAndBox();
+
+      this.loadingManager.onLoad = () => {
+        setTimeout(() => {
+          this.RESOURCE_LOADED = true;
+        }, 3000);
+        this.initGuiMaterial();
+        this.createBox();
+        this.canvas.addEventListener("mousedown", this.createCoin, false);
+      };
+    } else {
+      this.initGuiMaterial();
       this.createBox();
       this.canvas.addEventListener("mousedown", this.createCoin, false);
     }
   }
 
-  firstInitCoinAndBox() {
-    this.loadingManager.onLoad = () => {
-      console.log("Models loaded!!");
-      gs.TweenLite.to(this.loadingScreen.ico.group.scale, 2.5, {
-        x: 0.00001,
-        y: 0.00001,
-        z: 0.00001,
-        ease: gs.Power2.easeIn,
-        onComplete: () => {
-          this.loadingScreen.scene.background = new THREE.Color(0xb381c7);
-        }
-      });
-      gs.TweenLite.to(this.loadingScreen.tetra.group.scale, 2.3, {
-        x: 0.00001,
-        y: 0.00001,
-        z: 0.00001,
-        ease: gs.Power2.easeIn,
-        onComplete: () => {
-          this.loadingScreen.scene.background = new THREE.Color(0xe58463);
-        }
-      });
-      gs.TweenLite.to(this.loadingScreen.octa.group.scale, 2.1, {
-        x: 0.00001,
-        y: 0.00001,
-        z: 0.00001,
-        ease: gs.Power2.easeIn
-      });
-
-      setTimeout(() => {
-        this.RESOURCE_LOADED = true;
-        this.createBox();
-        this.canvas.addEventListener("mousedown", this.createCoin, false);
-      }, 3000);
+  async initGuiMaterial() {
+    const CoinMat = {
+      color: 0xcec721,
+      emissive: 0x595000,
+      roughness: 0.41,
+      metalness: 0.68
     };
+    const BoxMat = {
+      color: 0x190b02,
+      emissive: 0x190b00,
+      roughness: 0.62,
+      metalness: 0.43
+    };
+    //box Material
+    this.cloneBox = this.boxObj.clone();
+    this.boxMat = new THREE.MeshStandardMaterial(BoxMat);
+    await this.guiMaterial(
+      this.gui,
+      "Box Material",
+      BoxMat,
+      this.boxMat,
+      this.cloneBox
+    );
+
+    //Coin Material
+    this.coinMat = new THREE.MeshStandardMaterial(CoinMat);
+    await this.guiMaterial(
+      this.gui,
+      "Coin Material",
+      CoinMat,
+      this.coinMat,
+      this.coinObj
+    );
+  }
+  firstInitCoinAndBox() {
+    let tl = new gs.TimelineLite();
+    tl.to(this.loadingScreen.octa.group.scale, 1, {
+      x: 0.00001,
+      y: 0.00001,
+      z: 0.00001,
+      ease: gs.Power2.easeIn
+    });
+
+    tl.to(this.loadingScreen.tetra.group.scale, 0.5, {
+      x: 0.00001,
+      y: 0.00001,
+      z: 0.00001,
+      ease: gs.Power2.easeIn,
+      onComplete: () => {
+        this.loadingScreen.scene.background = new THREE.Color(0xe58463);
+      }
+    });
+    tl.to(this.loadingScreen.ico.group.scale, 0.5, {
+      x: 0.00001,
+      y: 0.00001,
+      z: 0.00001,
+      ease: gs.Power2.easeIn,
+      onComplete: () => {
+        this.loadingScreen.scene.background = new THREE.Color(0xb381c7);
+      }
+    });
+    return tl.play();
   }
 
   runScene2() {
     this.isScene1 = false;
-
     this.initScene2();
     this.dragControl.addEventListener("dragstart", () => {
       this.controls.enabled = false;
@@ -442,6 +603,155 @@ export class PendulumService {
     this.world.addContactMaterial(ball_ball);
     this.world.addContactMaterial(coin_ground);
   }
+  guiDirectLight(
+    _gui: dat.GUI,
+    _folderName: String,
+    _object: any,
+    _light: THREE.DirectionalLight
+  ) {
+    let folder = _gui.addFolder(_folderName);
+    folder.addColor(_object, "color").onChange(() => {
+      _light.color.set(_object.color);
+    });
+    folder.add(_object, "intensity", 0, 5).onChange(() => {
+      _light.intensity = _object.intensity;
+    });
+    folder.add(_object, "x", -20, 20).onChange(() => {
+      _light.position.x = _object.x;
+    });
+    folder.add(_object, "y", -20, 20).onChange(() => {
+      _light.position.y = _object.y;
+    });
+    folder.add(_object, "z", -20, 20).onChange(() => {
+      _light.position.z = _object.z;
+    });
+  }
+  guiPointLight(
+    _gui: dat.GUI,
+    _folderName: String,
+    _object: any,
+    _light: THREE.PointLight
+  ) {
+    let folder = _gui.addFolder(_folderName);
+    folder.addColor(_object, "color").onChange(() => {
+      _light.color.set(_object.color);
+    });
+    folder.add(_object, "intensity", 0, 5).onChange(() => {
+      _light.intensity = _object.intensity;
+    });
+    folder.add(_object, "distance", 0, 25).onChange(() => {
+      _light.distance = _object.distance;
+    });
+    folder.add(_object, "decay", 0, 2, 1).onChange(() => {
+      _light.decay = _object.decay;
+    });
+    folder.add(_object, "x", -20, 20).onChange(() => {
+      _light.position.x = _object.x;
+    });
+    folder.add(_object, "y", -20, 20).onChange(() => {
+      _light.position.y = _object.y;
+    });
+    folder.add(_object, "z", -20, 20).onChange(() => {
+      _light.position.z = _object.z;
+    });
+  }
+  guiHemiLight(
+    _gui: dat.GUI,
+    _folderName: String,
+    _object: any,
+    _light: THREE.HemisphereLight
+  ) {
+    let folder = _gui.addFolder(_folderName);
+    folder.addColor(_object, "skyColor").onChange(() => {
+      _light.color.set(_object.color);
+    });
+    folder.addColor(_object, "groundColor").onChange(() => {
+      _light.color.set(_object.color);
+    });
+    folder.add(_object, "intensity", 0, 5).onChange(() => {
+      _light.intensity = _object.intensity;
+    });
+    folder.add(_object, "x", -20, 20).onChange(() => {
+      _light.position.x = _object.x;
+    });
+    folder.add(_object, "y", -20, 20).onChange(() => {
+      _light.position.y = _object.y;
+    });
+    folder.add(_object, "z", -20, 20).onChange(() => {
+      _light.position.z = _object.z;
+    });
+  }
+  guiLambertMat(
+    _gui: dat.GUI,
+    _folderName: String,
+    _object: any,
+    _material: THREE.MeshLambertMaterial
+  ) {
+    let folder = _gui.addFolder(_folderName);
+
+    folder.addColor(_object, "color").onChange(() => {
+      _material.color.set(_object.color);
+    });
+    folder.addColor(_object, "emissive").onChange(() => {
+      _material.emissive.set(_object.emissive);
+    });
+
+    return folder;
+  }
+  guiPhongMat(
+    _gui: dat.GUI,
+    _folderName: String,
+    _object: any,
+    _material: THREE.MeshPhongMaterial
+  ) {
+    let folder = _gui.addFolder(_folderName);
+
+    folder.addColor(_object, "color").onChange(() => {
+      _material.color.set(_object.color);
+    });
+    folder.addColor(_object, "emissive").onChange(() => {
+      _material.emissive.set(_object.emissive);
+    });
+    folder.add(_object, "shininess", 0, 100, 1).onChange(() => {
+      _material.shininess = _object.shininess;
+    });
+    return folder;
+  }
+  guiMaterial(
+    _gui: dat.GUI,
+    _folderName: String,
+    _object: any,
+    _material: THREE.MeshStandardMaterial,
+    _scene?: any
+  ) {
+    let folder = _gui.addFolder(_folderName);
+
+    folder.addColor(_object, "color").onChange(() => {
+      _material.color.set(_object.color);
+      if (_scene) {
+        _scene.children["0"].material = _material;
+      }
+    });
+    folder.addColor(_object, "emissive").onChange(() => {
+      _material.emissive.set(_object.emissive);
+      if (_scene) {
+        _scene.children["0"].material = _material;
+      }
+    });
+    folder.add(_object, "roughness", 0, 1).onChange(() => {
+      _material.roughness = _object.roughness;
+      if (_scene) {
+        _scene.children["0"].material = _material;
+      }
+    });
+    folder.add(_object, "metalness", 0, 1).onChange(() => {
+      _material.metalness = _object.metalness;
+      if (_scene) {
+        _scene.children["0"].material = _material;
+      }
+    });
+    return folder;
+  }
 
   initModels() {
     this.initBox();
@@ -479,14 +789,20 @@ export class PendulumService {
   }
   createGround2() {
     //let background = new THREE.IcosahedronGeometry(20);
-    let background = new THREE.BoxGeometry(20, 20, 20);
-    let backgroundMat = new THREE.MeshStandardMaterial({
+    const BackGround = {
       color: 0xc09bef,
-      roughness: 1,
       emissive: 0x000000,
+      shininess: 30
+    };
+    let background = new THREE.BoxGeometry(20, 20, 20);
+    let backgroundMat = new THREE.MeshPhongMaterial({
+      color: BackGround.color,
+      emissive: BackGround.emissive,
+      shininess: BackGround.shininess,
       side: THREE.BackSide
     });
     let backgroundMesh = new THREE.Mesh(background, backgroundMat);
+    this.guiPhongMat(this.gui, "Background", BackGround, backgroundMat);
     // backgroundMesh.receiveShadow = true;
     backgroundMesh.position.set(0, 0, 0);
     backgroundMesh.rotation.set(0, -Math.PI / 2, 0);
@@ -495,7 +811,11 @@ export class PendulumService {
     this.scene.add(backgroundMesh);
   }
 
-  addSphereChain(x: number) {
+  addSphereChain(
+    x: number,
+    _ropeMat: THREE.MeshLambertMaterial,
+    _ballMat: THREE.MeshStandardMaterial
+  ) {
     let radius = 0.5;
     let quat = new CANNON.Quaternion(0.5, 0, 0, 0.5);
     quat.normalize();
@@ -511,8 +831,8 @@ export class PendulumService {
     this.world.addBody(holdPoint);
 
     let sphereGeo = new THREE.SphereBufferGeometry(size, 8, 8);
-    let material = new THREE.MeshStandardMaterial({ color: 0x3d59fb });
-    let sphereMesh = new THREE.Mesh(sphereGeo, material);
+    let sphereMesh = new THREE.Mesh(sphereGeo, _ropeMat);
+    // this.guiLambertMat(this.gui, "Rope", RopeMat, material);
     this.meshes.push(sphereMesh);
     this.clearScene.push(sphereMesh.uuid);
     this.scene.add(sphereMesh);
@@ -529,8 +849,7 @@ export class PendulumService {
     this.world.addBody(ropeBody);
 
     let ropeGeo = new THREE.CylinderGeometry(size, size, 4, 8, 8);
-    let material02 = new THREE.MeshStandardMaterial({ color: 0x3d59fb });
-    let sphereMesh02 = new THREE.Mesh(ropeGeo, material02);
+    let sphereMesh02 = new THREE.Mesh(ropeGeo, _ropeMat);
     this.meshes.push(sphereMesh02);
     this.clearScene.push(sphereMesh02.uuid);
     this.scene.add(sphereMesh02);
@@ -558,12 +877,9 @@ export class PendulumService {
     this.world.addBody(lastBallCannon);
 
     let ballGeo = new THREE.SphereGeometry(radius, 20, 20);
-    let ballMat = new THREE.MeshStandardMaterial({
-      color: 0x8092f7,
-      roughness: 0.5,
-      metalness: 0.6
-    });
-    let ballMesh = new THREE.Mesh(ballGeo, ballMat);
+
+    let ballMesh = new THREE.Mesh(ballGeo, _ballMat);
+    // this.guiMaterial(this.gui, "Ball", BallMat, ballMat);
     // ballMesh.castShadow = true;
     // ballMesh.receiveShadow = true;
     this.meshes.push(ballMesh);
@@ -661,17 +977,20 @@ export class PendulumService {
     this.world.addBody(body);
 
     //graphics
-    let cloneBox = new THREE.Object3D();
-    cloneBox = this.boxObj.clone();
-    this.clearScene.push(cloneBox.uuid);
-    this.scene.add(cloneBox);
-    this.meshes.push(cloneBox);
+
+    // cloneBox.overrideMaterial = this.boxMat;
+
+    this.clearScene.push(this.cloneBox.uuid);
+    this.scene.add(this.cloneBox);
+    this.meshes.push(this.cloneBox);
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+    console.log("This is Clone");
   }
 
   createCoin = _event => {
     let shootPosition = new THREE.Vector3();
     let cloneMesh = this.coinObj.clone();
+
     let coinShape = new CANNON.Cylinder(0.15, 0.15, 0.03, 12);
     let coinBody = new CANNON.Body({
       mass: 0.1,
@@ -746,12 +1065,12 @@ export class PendulumService {
     this.loader = new GLTFLoader(this.loadingManager);
 
     this.loader.load("assets/saisen4.glb", gltf => {
-      this.boxObj = gltf.scene;
+      this.boxObj = gltf.scene.children["0"];
+      this.boxObj.receiveShadow = true;
+      this.boxObj.castShadow = true;
       this.boxObj.children["0"].receiveShadow = true;
       this.boxObj.children["0"].castShadow = true;
-      this.boxObj.children["0"].children["0"].receiveShadow = true;
-      this.boxObj.children["0"].children["0"].castShadow = true;
-      this.boxObj.children["0"].children["0"].material.copy(boxMat);
+      this.boxObj.children["0"].material.copy(boxMat);
     });
   }
 

@@ -25,7 +25,7 @@ export class PendulumComponent implements OnInit, AfterViewInit {
     this.penServ.createScene(this.penId);
     this.penServ.disableScene2();
     this.penServ.runScene1();
-    this.penServ.firstInitCoinAndBox();
+    // this.penServ.firstInitCoinAndBox();
     this.penServ.animate();
     // this.router.onSameUrlNavigation='reload';
   }
@@ -37,9 +37,9 @@ export class PendulumComponent implements OnInit, AfterViewInit {
     TweenLite.fromTo(
       ".hold_trigger",
       1,
-      { scale: 0 },
+      { scale: 0.0001 },
       { scale: 1, ease: Power2.easeOut }
-    ).delay(3);
+    ).delay(3.5);
     TweenLite.set(spinner, { strokeDashoffset: 720 });
     const tween = TweenLite.to(spinner, 0.72, {
       strokeDashoffset: 0,
