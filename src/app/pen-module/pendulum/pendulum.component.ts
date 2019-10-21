@@ -7,9 +7,9 @@ import {
   Renderer2
 } from "@angular/core";
 import { PendulumService } from "./pendulum.service";
-// import * as gs from "gsap";
-import { TweenLite } from "gsap/TweenLite";
-import { Power2 } from "gsap/EasePack";
+import * as gs from "gsap";
+// import { TweenLite } from "gsap/TweenLite";
+// import { Power2 } from "gsap/EasePack";
 @Component({
   selector: "app-pendulum",
   templateUrl: "./pendulum.component.html",
@@ -34,14 +34,14 @@ export class PendulumComponent implements OnInit, AfterViewInit {
     const holdTrigger = this.holdBtn.nativeElement;
 
     const spinner = ".spinner";
-    TweenLite.fromTo(
+    gs.TweenLite.fromTo(
       ".hold_trigger",
       1,
       { scale: 0.0001 },
-      { scale: 1, ease: Power2.easeOut }
+      { scale: 1, ease: gs.Power2.easeOut }
     ).delay(3.5);
-    TweenLite.set(spinner, { strokeDashoffset: 720 });
-    const tween = TweenLite.to(spinner, 0.72, {
+    gs.TweenLite.set(spinner, { strokeDashoffset: 720 });
+    const tween = gs.TweenLite.to(spinner, 0.72, {
       strokeDashoffset: 0,
       paused: true,
       onComplete: () => {
