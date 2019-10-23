@@ -22,6 +22,24 @@ export class PendulumComponent implements OnInit, AfterViewInit {
   constructor(private penServ: PendulumService, private renderer: Renderer2) {}
 
   ngOnInit() {
+    const cursor = document.querySelector(".cursor");
+    document.addEventListener("mousemove", e => {
+      cursor.setAttribute(
+        "style",
+        "top:" + (e.pageY - 22) + "px;left:" + (e.pageX - 22) + "px;"
+      );
+    });
+    document.addEventListener("mousedown", e => {
+      e.preventDefault();
+      cursor.classList.remove("on-mouseup");
+      cursor.classList.add("on-mousedown");
+    });
+    document.addEventListener("mouseup", e => {
+      e.preventDefault();
+
+      cursor.classList.remove("on-mousedown");
+      cursor.classList.add("on-mouseup");
+    });
     this.penServ.createScene(this.penId);
     this.penServ.disableScene2();
     this.penServ.runScene1();
